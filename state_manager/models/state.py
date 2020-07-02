@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import Callable, Optional
+
+from pydantic import BaseModel
 
 
 class StateModel(BaseModel):

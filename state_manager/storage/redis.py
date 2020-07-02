@@ -2,8 +2,8 @@ import asyncio
 import json
 import typing
 
-from state_manager.storage_settings import StorageSettings
 from state_manager.storage.base import BaseStorage
+from state_manager.storage_settings import StorageSettings
 
 try:
     import aioredis

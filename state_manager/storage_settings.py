@@ -1,7 +1,7 @@
+import ssl
 from typing import Optional, Union
 
 from pydantic import BaseSettings, AnyUrl, Field
-import ssl
 
 
 class StorageSettings(BaseSettings):

@@ -1,6 +1,6 @@
+from aiogram import Bot, Dispatcher
 from aiogram.types.base import TelegramObject
 from pydantic import BaseModel
-from aiogram import Bot, Dispatcher
 
 from state_manager.storage.base import BaseStorage
 

@@ -1,5 +1,6 @@
-from aiogram import Dispatcher
 from typing import Callable, Optional, Set
+
+from aiogram import Dispatcher
 
 from state_manager.middleware import StateMiddleware
 from state_manager.models.state import StateModel

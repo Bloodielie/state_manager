@@ -1,16 +1,15 @@
+from asyncio import iscoroutinefunction
 from functools import partial
-from typing import Optional, Callable, Any
+from typing import Optional, Callable
 
 from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types.base import TelegramObject
 
+from state_manager.models.dependency import DependencyManager
 from state_manager.storage import redis
 from state_manager.storage.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
-from asyncio import iscoroutinefunction
-from state_manager.models.dependency import DependencyManager
-
 from state_manager.utils.dependency import get_func_attributes
 from state_manager.utils.search import handler_search, search_handler_in_routes
 
