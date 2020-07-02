@@ -1,15 +1,15 @@
 from asyncio import iscoroutinefunction
 from functools import partial
-from typing import Optional, Callable
+from typing import Optional, Callable, Type
 
 from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from aiogram.types.base import TelegramObject
 
 from state_manager.models.dependency import DependencyManager
 from state_manager.storage import redis
 from state_manager.storage.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
+from state_manager.types import Context
 from state_manager.utils.dependency import get_func_attributes
 from state_manager.utils.search import handler_search, search_handler_in_routes
 
@@ -19,7 +19,7 @@ class StateMiddleware(BaseMiddleware):
         self,
         main_router: "MainStateRouter",
         *,
-        storage: Optional[BaseStorage] = None,
+        storage: Optional[Type[BaseStorage]] = None,
         default_state_name: Optional[str] = None,
     ) -> None:
         self._main_router = main_router
@@ -42,7 +42,7 @@ class StateMiddleware(BaseMiddleware):
             else:
                 handler(**func_attr)
 
-    async def _get_state_handler(self, ctx: TelegramObject, event_type: str) -> Optional[Callable]:
+    async def _get_state_handler(self, ctx: Context, event_type: str) -> Optional[Callable]:
         state_name = await self._get_user_state_name(ctx)
         handler_search_ = partial(handler_search, ctx, event_type, state_name)
         if handler := handler_search_(self._main_router.state_storage):
@@ -50,7 +50,7 @@ class StateMiddleware(BaseMiddleware):
         if handler := search_handler_in_routes(self._main_router.routers, handler_search_):
             return handler
 
-    async def _get_user_state_name(self, ctx: TelegramObject) -> str:
+    async def _get_user_state_name(self, ctx: Context) -> str:
         user_id = ctx.from_user.id
         user_scene = await self._storage.get(user_id)
         if user_scene is None:

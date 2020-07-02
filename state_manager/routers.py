@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Set
+from typing import Callable, Optional, Set, Type
 
 from aiogram import Dispatcher
 
@@ -49,7 +49,7 @@ class MainStateRouter(StateRouter):
         self.dispatcher = dispatcher or Dispatcher.get_current()
 
     def install_middleware(
-        self, *, storage: Optional[BaseStorage] = None, default_state_name: Optional[str] = None
+        self, *, storage: Optional[Type[BaseStorage]] = None, default_state_name: Optional[str] = None
     ) -> None:
         self.dispatcher.middleware.setup(
             StateMiddleware(self, storage=storage, default_state_name=default_state_name)

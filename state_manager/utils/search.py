@@ -1,8 +1,7 @@
 from typing import Callable, Optional, Set
 
-from aiogram.types.base import TelegramObject
-
 from state_manager.storage.state_storage import StateStorage
+from state_manager.types import Context
 
 
 def search_handler_in_routes(routes: Set["StateRouter"], search_func: Callable) -> Optional[Callable]:
@@ -15,7 +14,7 @@ def search_handler_in_routes(routes: Set["StateRouter"], search_func: Callable) 
             return handler
 
 
-def handler_search(ctx: TelegramObject, event_type: str, state_name: str, state_storage: StateStorage) -> Optional[Callable]:
+def handler_search(ctx: Context, event_type: str, state_name: str, state_storage: StateStorage) -> Optional[Callable]:
     if states := state_storage.get_state(event_type, state_name):
         for state in states:
             if state.filter is None:

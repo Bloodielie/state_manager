@@ -4,6 +4,7 @@ import typing
 
 from state_manager.storage.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
+from state_manager.types import Dumper, Loader
 
 try:
     import aioredis
@@ -16,8 +17,8 @@ class RedisStorage(BaseStorage):
         self,
         storage_settings: StorageSettings,
         loop: typing.Optional[asyncio.AbstractEventLoop] = None,
-        dumper=json.dumps,
-        loader=json.loads,
+        dumper: Dumper = json.dumps,
+        loader: Loader = json.loads,
         **kwargs,
     ):
         if aioredis is None:
