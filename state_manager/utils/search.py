@@ -16,9 +16,11 @@ def search_handler_in_routes(routes: Set["StateRouter"], search_func: Callable) 
 
 
 def handler_search(ctx: TelegramObject, event_type: str, state_name: str, state_storage: StateStorage) -> Optional[Callable]:
-    for state in state_storage.get_state(event_type, state_name):
-        if state.filter is None:
+    if states := state_storage.get_state(event_type, state_name):
+        for state in states:
+            if state.filter is None:
+                return state.handler
+            if not state.filter(ctx):
+                continue
             return state.handler
-        if not state.filter(ctx):
-            continue
-        return state.handler
+    return None

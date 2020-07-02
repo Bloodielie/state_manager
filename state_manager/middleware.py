@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 
 from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
@@ -32,16 +32,16 @@ class StateMiddleware(BaseMiddleware):
     async def on_post_process_message(self, message: types.Message, results: list, data: dict) -> None:
         if data:
             return
-        handler = await self._get_state_handler(message, "message")
-        dependency = DependencyManager(
-            bot=self._bot, dispatcher=self._main_router.dispatcher, context=message, storage=self._storage
-        )
-        func_attr = get_func_attributes(handler, dependency)
+        if handler := await self._get_state_handler(message, "message"):
+            dependency = DependencyManager(
+                bot=self._bot, dispatcher=self._main_router.dispatcher, context=message, storage=self._storage
+            )
+            func_attr = get_func_attributes(handler, dependency)
 
-        if iscoroutinefunction(handler):
-            await handler(**func_attr)
-        else:
-            handler(**func_attr)
+            if iscoroutinefunction(handler):
+                await handler(**func_attr)
+            else:
+                handler(**func_attr)
 
     async def _get_state_handler(self, ctx: TelegramObject, event_type: str) -> Optional[Callable]:
         state_name = await self._get_user_state_name(ctx)
