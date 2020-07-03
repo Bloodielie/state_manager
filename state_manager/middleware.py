@@ -28,13 +28,21 @@ class StateMiddleware(BaseMiddleware):
         self._bot = main_router.dispatcher.bot
         super().__init__()
 
-    async def on_post_process_message(self, message: types.Message, results: list, data: dict) -> None:
+    async def on_post_process_message(self, message: types.Message, _, data: dict) -> None:
         if data:
             return
-        if handler := await self._get_state_handler(message, "message"):
-            dependency = DependencyManager(
-                bot=self._bot, dispatcher=self._main_router.dispatcher, context=message, storage=self._storage
-            )
+        await self.post_process_handlers(message, "message")
+
+    async def on_post_process_callback_query(self, callback_query: types.CallbackQuery, _, data: dict) -> None:
+        if data:
+            return
+        await self.post_process_handlers(callback_query, "callback_query")
+
+    async def post_process_handlers(self, ctx: Context, event_type: str) -> None:
+        dependency = DependencyManager(
+            bot=self._bot, dispatcher=self._main_router.dispatcher, context=ctx, storage=self._storage
+        )
+        if handler := await self._get_state_handler(dependency, event_type):
             func_attr = get_func_attributes(handler, dependency)
 
             if iscoroutinefunction(handler):
@@ -42,9 +50,9 @@ class StateMiddleware(BaseMiddleware):
             else:
                 handler(**func_attr)
 
-    async def _get_state_handler(self, ctx: Context, event_type: str) -> Optional[Callable]:
-        state_name = await self._get_user_state_name(ctx)
-        handler_search_ = partial(handler_search, ctx, event_type, state_name)
+    async def _get_state_handler(self, dependency_manager: DependencyManager, event_type: str) -> Optional[Callable]:
+        state_name = await self._get_user_state_name(dependency_manager.context)
+        handler_search_ = partial(handler_search, dependency_manager, event_type, state_name)
         if handler := handler_search_(self._main_router.state_storage):
             return handler
         if handler := search_handler_in_routes(self._main_router.routers, handler_search_):
