@@ -9,6 +9,7 @@ from state_manager.storage.base import BaseStorage
 from state_manager.storage.state_storage import StateStorage
 
 
+# todo: add support inline handler and other handlers
 class StateRouter:
     def __init__(self) -> None:
         self.state_storage = StateStorage()

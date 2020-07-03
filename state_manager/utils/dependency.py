@@ -4,6 +4,7 @@ from typing import Callable
 from state_manager.models.dependency import DependencyManager
 
 
+# todo: add support Dependents as in Fastapi
 def get_func_attributes(function: Callable, dependency_manager: DependencyManager):
     dependencies = dependency_manager.fields.values()
     func_parameters = inspect.signature(function).parameters

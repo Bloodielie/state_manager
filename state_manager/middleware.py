@@ -14,6 +14,8 @@ from state_manager.utils.dependency import get_func_attributes
 from state_manager.utils.search import handler_search, search_handler_in_routes
 
 
+# todo: add support other async lib for bots
+# todo: add support inline handler in aiogram middleware
 class StateMiddleware(BaseMiddleware):
     def __init__(
         self,
