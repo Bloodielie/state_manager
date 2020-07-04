@@ -1,15 +1,13 @@
-from typing import Callable, Optional, Tuple, Type, Union
+from typing import Callable, Optional, Tuple, Any
 
 from pydantic import BaseModel
-
-from state_manager.filter import BaseFilter
 
 
 class StateModel(BaseModel):
     name: str
     event_type: str
     handler: Callable
-    filters: Optional[Tuple[Callable]] = None
+    filters: Optional[Tuple[Callable[[Any], bool]]] = None
 
     class Config:
         arbitrary_types_allowed = True

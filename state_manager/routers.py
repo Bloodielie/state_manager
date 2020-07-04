@@ -1,15 +1,13 @@
-from typing import Callable, Optional, Set, Type, Tuple
+from typing import Callable, Optional, Set, Type, Tuple, Any
 
 from aiogram import Dispatcher
 
-from state_manager.filter import BaseFilter
 from state_manager.middleware import StateMiddleware
 from state_manager.models.state import StateModel
 from state_manager.storage.base import BaseStorage
 from state_manager.storage.state_storage import StateStorage
 
 
-# todo: add support inline handler and other handlers
 class StateRouter:
     def __init__(self) -> None:
         self.state_storage = StateStorage()
@@ -21,7 +19,7 @@ class StateRouter:
         handler: Callable,
         *,
         state_name: Optional[str] = None,
-        filters: Optional[Tuple[Type[BaseFilter]]] = None
+        filters: Optional[Tuple[Callable[[Any], bool]]] = None
     ) -> None:
         if isinstance(filters, tuple) and (len(filters) == 0):
             filters = None
@@ -32,19 +30,27 @@ class StateRouter:
     def include_router(self, router: "StateRouter") -> None:
         self.routers.add(router)
 
-    def message_handler(self, *filters: Type[BaseFilter], state_name: Optional[str] = None) -> Callable:
+    def default_handler_logic(self, handler_name: str, state_name: Optional[str] = None, filters: Tuple[Callable[[Any], bool]] = None) -> Callable:
         def wrap(callback: Callable):
-            self.registration_state_handler("message", callback, state_name=state_name, filters=filters)
+            self.registration_state_handler(handler_name, callback, state_name=state_name, filters=filters)
             return callback
 
         return wrap
 
-    def callback_query_handler(self, *filters: Type[BaseFilter], state_name: Optional[str] = None) -> Callable:
-        def wrap(callback: Callable):
-            self.registration_state_handler("callback_query", callback, state_name=state_name, filters=filters)
-            return callback
+    def message_handler(self, *filters: Callable[[Any], bool], state_name: Optional[str] = None) -> Callable:
+        return self.default_handler_logic("message", state_name, filters)
 
-        return wrap
+    def callback_query_handler(self, *filters: Callable[[Any], bool], state_name: Optional[str] = None) -> Callable:
+        return self.default_handler_logic("callback_query", state_name, filters)
+
+    def edited_message_handler(self, *filters: Callable[[Any], bool], state_name: Optional[str] = None) -> Callable:
+        return self.default_handler_logic("edited_message", state_name, filters)
+
+    def channel_post_handler(self, *filters: Callable[[Any], bool], state_name: Optional[str] = None) -> Callable:
+        return self.default_handler_logic("channel_post", state_name, filters)
+
+    def edited_channel_post_handler(self, *filters: Callable[[Any], bool], state_name: Optional[str] = None) -> Callable:
+        return self.default_handler_logic("edited_channel_post", state_name, filters)
 
 
 class MainStateRouter(StateRouter):

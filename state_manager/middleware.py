@@ -15,7 +15,6 @@ from state_manager.utils.search import handler_search, search_handler_in_routes
 
 
 # todo: add support other async lib for bots
-# todo: add support inline handler in aiogram middleware
 class StateMiddleware(BaseMiddleware):
     def __init__(
         self,
@@ -40,6 +39,11 @@ class StateMiddleware(BaseMiddleware):
             return
         await self.post_process_handlers(callback_query, "callback_query")
 
+    async def on_post_process_edited_message(self, callback_query: types.CallbackQuery, _, data: dict) -> None:
+        if data:
+            return
+        await self.post_process_handlers(callback_query, "edited_message")
+
     async def post_process_handlers(self, ctx: Context, event_type: str) -> None:
         dependency = DependencyManager(
             bot=self._bot, dispatcher=self._main_router.dispatcher, context=ctx, storage=self._storage
@@ -62,8 +66,7 @@ class StateMiddleware(BaseMiddleware):
 
     async def _get_user_state_name(self, ctx: Context) -> str:
         user_id = ctx.from_user.id
-        user_scene = await self._storage.get(user_id)
-        if user_scene is None:
+        user_scene = await self._storage.get(user_id, self._default_state_name)
+        if user_scene == self._default_state_name:
             await self._storage.put(user_id, self._default_state_name)
-            user_scene = self._default_state_name
         return user_scene
