@@ -30,7 +30,9 @@ class StateRouter:
     def include_router(self, router: "StateRouter") -> None:
         self.routers.add(router)
 
-    def default_handler_logic(self, handler_name: str, state_name: Optional[str] = None, filters: Tuple[Callable[[Any], bool]] = None) -> Callable:
+    def default_handler_logic(
+        self, handler_name: str, state_name: Optional[str] = None, filters: Tuple[Callable[[Any], bool]] = None
+    ) -> Callable:
         def wrap(callback: Callable):
             self.registration_state_handler(handler_name, callback, state_name=state_name, filters=filters)
             return callback
@@ -49,7 +51,9 @@ class StateRouter:
     def channel_post_handler(self, *filters: Callable[[Any], bool], state_name: Optional[str] = None) -> Callable:
         return self.default_handler_logic("channel_post", state_name, filters)
 
-    def edited_channel_post_handler(self, *filters: Callable[[Any], bool], state_name: Optional[str] = None) -> Callable:
+    def edited_channel_post_handler(
+        self, *filters: Callable[[Any], bool], state_name: Optional[str] = None
+    ) -> Callable:
         return self.default_handler_logic("edited_channel_post", state_name, filters)
 
 

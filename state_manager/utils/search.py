@@ -6,17 +6,17 @@ from state_manager.storage.state_storage import StateStorage
 from state_manager.utils.dependency import get_func_attributes
 
 
-def search_handler_in_routes(routes: Set["StateRouter"], search_func: Callable) -> Optional[Callable]:
+async def search_handler_in_routes(routes: Set["StateRouter"], search_func: Callable) -> Optional[Callable]:
     if not isinstance(routes, set):
         return None
     for router in routes:
-        if handler := search_func(router.state_storage):
+        if handler := await search_func(router.state_storage):
             return handler
-        if handler := search_handler_in_routes(router.routers, search_func):
+        if handler := await search_handler_in_routes(router.routers, search_func):
             return handler
 
 
-def handler_search(
+async def handler_search(
     dependency_manager: DependencyManager, event_type: str, state_name: str, state_storage: StateStorage
 ) -> Optional[Callable]:
     states = state_storage.get_state(event_type, state_name)
@@ -26,7 +26,7 @@ def handler_search(
         if state.filters is None:
             return state.handler
         for filter in state.filters:
-            filter_attr = get_func_attributes(filter, dependency_manager)
+            filter_attr = await get_func_attributes(filter, dependency_manager)
             if iscoroutinefunction(filter):
                 result = False
             else:

@@ -1,3 +1,5 @@
+from typing import Callable
+
 from aiogram import Bot, Dispatcher
 from aiogram.types.base import TelegramObject
 from pydantic import BaseModel
@@ -16,3 +18,12 @@ class DependencyManager(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class Depends:
+    def __init__(self, dependency: Callable) -> None:
+        self.dependency = dependency
+
+    def __repr__(self) -> str:
+        attr = getattr(self.dependency, "__name__", type(self.dependency).__name__)
+        return f"{self.__class__.__name__}({attr})"
