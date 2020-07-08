@@ -1,10 +1,9 @@
 import asyncio
-import json
 import typing
 
+from state_manager.models.state import StateData
 from state_manager.storage.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
-from state_manager.types import Dumper, Loader
 
 try:
     import aioredis
@@ -14,12 +13,7 @@ except ImportError:
 
 class RedisStorage(BaseStorage):
     def __init__(
-        self,
-        storage_settings: StorageSettings,
-        loop: typing.Optional[asyncio.AbstractEventLoop] = None,
-        dumper: Dumper = json.dumps,
-        loader: Loader = json.loads,
-        **kwargs,
+        self, storage_settings: StorageSettings, loop: typing.Optional[asyncio.AbstractEventLoop] = None, **kwargs,
     ):
         if aioredis is None:
             raise RuntimeError("You have to install aioredis - pip install aioredis")
@@ -36,23 +30,23 @@ class RedisStorage(BaseStorage):
         self._timeout = storage_settings.storage_timeout
         self._loop = loop or asyncio.get_event_loop()
 
-        self._dumper = dumper
-        self._loader = loader
-
         self._redis: typing.Optional["aioredis.Redis"] = None
         self._connection_lock = asyncio.Lock(loop=self._loop)
 
-    async def get(self, key: str, default: typing.Optional[typing.Any] = None) -> typing.Union[None, typing.Any]:
+    async def get(self, key: str, default: typing.Optional[StateData] = None) -> typing.Optional[StateData]:
         conn = await self.redis()
 
         key_ = await conn.get(key)
         if key_:
-            return self._loader(key_)
+            return StateData.parse_raw(key_)
         return default
 
-    async def put(self, key: str, value: typing.Any) -> None:
+    async def put(self, key: str, value: StateData) -> None:
         conn = await self.redis()
-        await conn.set(key, self._dumper(value))
+        if pre_state := await self.get(key):
+            value.pre_state = pre_state.current_state
+            await conn.set(key, value.json())
+        await conn.set(key, value.json())
 
     async def delete(self, key: str) -> typing.Optional[typing.NoReturn]:
         if not await self.contains(key):

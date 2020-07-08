@@ -1,20 +1,37 @@
-from typing import Callable
+from typing import Callable, Optional
 
 from aiogram import Bot, Dispatcher
 from aiogram.types.base import TelegramObject
 from pydantic import BaseModel
 
+from state_manager.models.state import StateData
 from state_manager.storage.base import BaseStorage
 
 
-class DependencyManager(BaseModel):
+class StateManager(BaseModel):
+    storage: BaseStorage
+    context: TelegramObject
+
+    async def set_next_state(self, state_name: str, *, data: Optional[dict] = None) -> None:
+        state_data = StateData(current_state=state_name, data=data)
+        await self.storage.put(self.context.from_user.id, state_data)
+
+    async def back_to_pre_state(self, *, data: Optional[dict] = None) -> None:
+        user_id = self.context.from_user.id
+        state = await self.storage.get(user_id)
+        state_data = StateData(current_state=state.pre_state, data=data)
+        await self.storage.put(user_id, state_data)
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class DependencyStorage(BaseModel):
     bot: Bot
     storage: BaseStorage
     dispatcher: Dispatcher
     context: TelegramObject
-
-    async def set_scene(self, scene_name: str) -> None:
-        await self.storage.put(self.context.from_user.id, scene_name)
+    state_manager: Optional[StateManager] = None
 
     class Config:
         arbitrary_types_allowed = True

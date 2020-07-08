@@ -1,14 +1,16 @@
 import typing
 from abc import ABC, abstractmethod
 
+from state_manager.models.state import StateData
+
 
 class BaseStorage(ABC):
     @abstractmethod
-    async def get(self, key: str, default: typing.Optional[typing.Any] = None) -> typing.Union[None, typing.Any]:
+    async def get(self, key: str, default: typing.Optional[StateData] = None) -> typing.Optional[StateData]:
         raise NotImplementedError
 
     @abstractmethod
-    async def put(self, key: str, value: typing.Any) -> None:
+    async def put(self, key: str, value: StateData) -> None:
         raise NotImplementedError
 
     @abstractmethod
