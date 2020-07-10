@@ -18,12 +18,12 @@ class StateMiddleware(BaseMiddleware):
     def __init__(
         self,
         main_router: "MainStateRouter",
-        *,
         storage: Optional[Type[BaseStorage]] = None,
         default_state_name: Optional[str] = None,
+        is_cached: bool = True,
     ) -> None:
         self._main_router = main_router
-        self._handler_finder = HandlerFinder(main_router)
+        self._handler_finder = HandlerFinder(main_router, is_cached)
         self._storage = storage or redis.RedisStorage(StorageSettings())
         self._default_state_name = default_state_name or "home"
         super().__init__()
@@ -50,7 +50,7 @@ class StateMiddleware(BaseMiddleware):
             context=ctx,
             storage=self._storage,
         )
-        state_name = await self._get_user_state_name(dependency_storage.context)
+        state_name = await self._get_user_state_name(ctx)
         if handler := await self._handler_finder.get_state_handler(dependency_storage, state_name, event_type):
             func_attr = await get_func_attributes(handler, dependency_storage)
             await check_function_and_run(handler, **func_attr)

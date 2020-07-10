@@ -63,6 +63,10 @@ class MainStateRouter(StateRouter):
         self.dispatcher = dispatcher or Dispatcher.get_current()
 
     def install_middleware(
-        self, *, storage: Optional[Type[BaseStorage]] = None, default_state_name: Optional[str] = None
+        self,
+        *,
+        storage: Optional[Type[BaseStorage]] = None,
+        default_state_name: Optional[str] = None,
+        is_cached: bool = True
     ) -> None:
-        self.dispatcher.middleware.setup(StateMiddleware(self, storage=storage, default_state_name=default_state_name))
+        self.dispatcher.middleware.setup(StateMiddleware(self, storage, default_state_name, is_cached))

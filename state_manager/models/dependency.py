@@ -6,11 +6,12 @@ from pydantic import BaseModel
 
 from state_manager.models.state import StateData
 from state_manager.storage.base import BaseStorage
+from state_manager.types import Context
 
 
 class StateManager(BaseModel):
     storage: BaseStorage
-    context: TelegramObject
+    context: Context
 
     async def set_next_state(self, state_name: str, *, data: Optional[dict] = None) -> None:
         state_data = StateData(current_state=state_name, data=data)
@@ -19,7 +20,10 @@ class StateManager(BaseModel):
     async def back_to_pre_state(self, *, data: Optional[dict] = None) -> None:
         user_id = self.context.from_user.id
         state = await self.storage.get(user_id)
-        state_data = StateData(current_state=state.pre_state, data=data)
+        if state.pre_state is None:
+            state_data = StateData(current_state=state.current_state, data=data)
+        else:
+            state_data = StateData(current_state=state.pre_state, data=data)
         await self.storage.put(user_id, state_data)
 
     class Config:

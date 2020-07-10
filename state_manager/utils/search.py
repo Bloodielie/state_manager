@@ -8,36 +8,35 @@ from state_manager.utils.dependency import get_func_attributes
 
 
 class HandlerFinder:
-    def __init__(self, main_router: "MainStateRouter", is_cache: bool = False):
+    def __init__(self, main_router: "MainStateRouter", is_cache: bool = False) -> None:
         self._main_router = main_router
         self._is_cache = is_cache
-        self._handler_in_cache: Dict[Tuple[str, str], Callable] = {} if is_cache else None
+        self._handler_in_cache: Dict[Tuple[str, str], Callable] = {} if self._is_cache else None
 
     async def get_state_handler(
         self, dependency_storage: DependencyStorage, state_name: str, event_type: str
     ) -> Optional[Callable]:
         if self._is_cache:
-            handler = self._handler_in_cache.get((state_name, event_type))
-            if handler:
+            if handler := self._handler_in_cache.get((state_name, event_type)):
                 return handler
-        return await self._get_state_handler(dependency_storage, state_name, event_type)
+
+        handler = await self._get_state_handler(dependency_storage, state_name, event_type)
+        if self._is_cache and handler is not None:
+            self._handler_in_cache[(state_name, event_type)] = handler
+        return handler
 
     async def _get_state_handler(
         self, dependency_storage: DependencyStorage, state_name: str, event_type: str
     ) -> Optional[Callable]:
         handler_search = partial(self._handler_search, dependency_storage, event_type, state_name)
         if handler := await handler_search(self._main_router.state_storage):
-            if self._is_cache:
-                self._handler_in_cache[(state_name, event_type)] = handler
             return handler
         if handler := await self._search_handler_in_routes(self._main_router.routers, handler_search):
-            if self._is_cache:
-                self._handler_in_cache[(state_name, event_type)] = handler
             return handler
 
     @staticmethod
     async def _handler_search(
-        dependency_manager: DependencyStorage, event_type: str, state_name: str, state_storage: StateStorage
+        dependency_storage: DependencyStorage, event_type: str, state_name: str, state_storage: StateStorage
     ) -> Optional[Callable]:
         states = state_storage.get_state(event_type, state_name)
         if states is None:
@@ -46,7 +45,7 @@ class HandlerFinder:
             if state.filters is None:
                 return state.handler
             for filter in state.filters:
-                filter_attr = await get_func_attributes(filter, dependency_manager)
+                filter_attr = await get_func_attributes(filter, dependency_storage)
                 if iscoroutinefunction(filter):
                     result = False
                 else:
