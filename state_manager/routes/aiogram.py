@@ -1,35 +1,13 @@
-from typing import Callable, Optional, Set, Type, Tuple, Any
+from typing import Callable, Optional, Type, Tuple, Any
 
 from aiogram import Dispatcher
 
-from state_manager.middleware import StateMiddleware
-from state_manager.models.state import StateModel
+from state_manager.middlewares.aiogram import AiogramStateMiddleware
+from state_manager.routes.base import BaseRouter
 from state_manager.storage.base import BaseStorage
-from state_manager.storage.state_storage import StateStorage
 
 
-class StateRouter:
-    def __init__(self) -> None:
-        self.state_storage = StateStorage()
-        self.routers: Set["StateRouter"] = set()
-
-    def registration_state_handler(
-        self,
-        event_type: str,
-        handler: Callable,
-        *,
-        state_name: Optional[str] = None,
-        filters: Optional[Tuple[Callable[[Any], bool]]] = None
-    ) -> None:
-        if isinstance(filters, tuple) and (len(filters) == 0):
-            filters = None
-        state_name = state_name or handler.__name__
-        state = StateModel(name=state_name, event_type=event_type, handler=handler, filters=filters)
-        self.state_storage.add_state(state)
-
-    def include_router(self, router: "StateRouter") -> None:
-        self.routers.add(router)
-
+class AiogramRouter(BaseRouter):
     def default_handler_logic(
         self, handler_name: str, state_name: Optional[str] = None, filters: Tuple[Callable[[Any], bool]] = None
     ) -> Callable:
@@ -57,7 +35,7 @@ class StateRouter:
         return self.default_handler_logic("edited_channel_post", state_name, filters)
 
 
-class MainStateRouter(StateRouter):
+class AiogramMainRouter(AiogramRouter):
     def __init__(self, dispatcher: Optional[Dispatcher] = None) -> None:
         super().__init__()
         self.dispatcher = dispatcher or Dispatcher.get_current()
@@ -69,4 +47,4 @@ class MainStateRouter(StateRouter):
         default_state_name: Optional[str] = None,
         is_cached: bool = True
     ) -> None:
-        self.dispatcher.middleware.setup(StateMiddleware(self, storage, default_state_name, is_cached))
+        self.dispatcher.middleware.setup(AiogramStateMiddleware(self, storage, default_state_name, is_cached))

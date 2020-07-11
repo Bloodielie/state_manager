@@ -14,10 +14,10 @@ from state_manager.utils.search import HandlerFinder
 
 
 # todo: add support other async lib for bots
-class StateMiddleware(BaseMiddleware):
+class AiogramStateMiddleware(BaseMiddleware):
     def __init__(
         self,
-        main_router: "MainStateRouter",
+        main_router: "AiogramMainRouter",
         storage: Optional[Type[BaseStorage]] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True,
