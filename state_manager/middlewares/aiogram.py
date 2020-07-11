@@ -29,6 +29,7 @@ class AiogramStateMiddleware(BaseMiddleware):
         super().__init__()
 
     async def on_post_process_message(self, message: types.Message, _, data: dict) -> None:
+        print(data)
         if data:
             return
         await self.post_process_handlers(message, "message")

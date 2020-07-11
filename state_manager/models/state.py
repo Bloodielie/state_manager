@@ -12,7 +12,7 @@ class StateModel(BaseModel):
     name: str
     event_type: str
     handler: Callable
-    filters: Optional[Tuple[Callable[[Any], bool]]] = None
+    filters: Optional[tuple] = None
 
     class Config:
         arbitrary_types_allowed = True

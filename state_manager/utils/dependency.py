@@ -1,15 +1,13 @@
 import inspect
 from typing import Callable
 
-from aiogram import Bot, Dispatcher
-
-from state_manager.models.dependency import DependencyStorage, Depends, StateManager
-from state_manager.storage.base import BaseStorage
-from state_manager.types import Context
+from state_manager.models.dependencys.aiogram import AiogramDependencyStorage, AiogramStateManager
+from state_manager.models.dependencys.base import Depends, BaseDependencyStorage
+from state_manager.models.dependencys.vkwave import VkWaveDependencyStorage, VkWaveStateManager
 from state_manager.utils.check import check_function_and_run
 
 
-async def get_func_attributes(function: Callable, dependency_storage: DependencyStorage):
+async def get_func_attributes(function: Callable, dependency_storage: BaseDependencyStorage):
     func_arg = {}
     dependencies = dependency_storage.fields.values()
     for attr_name, parameter in inspect.signature(function).parameters.items():
@@ -29,10 +27,10 @@ async def get_func_attributes(function: Callable, dependency_storage: Dependency
     return func_arg
 
 
-def dependency_storage_factory(
-    bot: Bot, dispatcher: Dispatcher, context: Context, storage: BaseStorage
-) -> DependencyStorage:
-    state_manager = StateManager(storage=storage, context=context)
-    return DependencyStorage(
-        bot=bot, dispatcher=dispatcher, context=context, storage=storage, state_manager=state_manager
-    )
+def dependency_storage_factory(*, lib: str = "aiogram", **kwargs) -> BaseDependencyStorage:
+    if lib == "aiogram":
+        kwargs["state_manager"] = AiogramStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
+        return AiogramDependencyStorage(**kwargs)
+    elif lib == "vkwave":
+        kwargs["state_manager"] = VkWaveStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
+        return VkWaveDependencyStorage(**kwargs)

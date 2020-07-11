@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 class BaseRouter(ABC):
     def __init__(self) -> None:
         self.state_storage = StateStorage()
-        self.routers: Set["StateRouter"] = set()
+        self.routers: Set["BaseRouter"] = set()
 
     def registration_state_handler(
         self,
@@ -25,7 +25,7 @@ class BaseRouter(ABC):
         state = StateModel(name=state_name, event_type=event_type, handler=handler, filters=filters)
         self.state_storage.add_state(state)
 
-    def include_router(self, router: "StateRouter") -> None:
+    def include_router(self, router: "BaseRouter") -> None:
         self.routers.add(router)
 
 

@@ -2,7 +2,7 @@ from asyncio import iscoroutinefunction
 from functools import partial
 from typing import Callable, Optional, Set, Dict, Tuple
 
-from state_manager.models.dependency import DependencyStorage
+from state_manager.models.dependencys.base import BaseDependencyStorage
 from state_manager.storage.state_storage import StateStorage
 from state_manager.utils.dependency import get_func_attributes
 
@@ -14,7 +14,7 @@ class HandlerFinder:
         self._handler_in_cache: Dict[Tuple[str, str], Callable] = {} if self._is_cache else None
 
     async def get_state_handler(
-        self, dependency_storage: DependencyStorage, state_name: str, event_type: str
+        self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
     ) -> Optional[Callable]:
         if self._is_cache:
             if handler := self._handler_in_cache.get((state_name, event_type)):
@@ -26,7 +26,7 @@ class HandlerFinder:
         return handler
 
     async def _get_state_handler(
-        self, dependency_storage: DependencyStorage, state_name: str, event_type: str
+        self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
     ) -> Optional[Callable]:
         handler_search = partial(self._handler_search, dependency_storage, event_type, state_name)
         if handler := await handler_search(self._main_router.state_storage):
@@ -36,7 +36,7 @@ class HandlerFinder:
 
     @staticmethod
     async def _handler_search(
-        dependency_storage: DependencyStorage, event_type: str, state_name: str, state_storage: StateStorage
+        dependency_storage: BaseDependencyStorage, event_type: str, state_name: str, state_storage: StateStorage
     ) -> Optional[Callable]:
         states = state_storage.get_state(event_type, state_name)
         if states is None:
