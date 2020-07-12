@@ -13,12 +13,12 @@ main_state = VkWaveMainRouter(bot)
 
 
 async def test(state_manager: VkWaveStateManager):
-    return await state_manager.get_data
+    return await state_manager.data
 
 
 @main_state.message_handler()
 async def home(event: bot.SimpleBotEvent, state_manager: VkWaveStateManager, depends_result=Depends(test)):
-    assert depends_result == (await state_manager.get_data) # True
+    assert depends_result == (await state_manager.data) # True
     await event.answer("go to home2")
     await state_manager.set_next_state("home2")
 

@@ -13,7 +13,7 @@ main_state = VkWaveMainRouter(bot)
 
 @main_state.message_handler(state_name=["home", "home3"])
 async def home(state_manager: VkWaveStateManager):
-    state = await state_manager.get_current_state
+    state = await state_manager.current_state
     if state == "home3":
         await state_manager.set_next_state("home")
         return "go to home"

@@ -19,7 +19,7 @@ async def home(event: bot.SimpleBotEvent, state_manager: VkWaveStateManager):
 
 @main_state.message_handler()
 async def home2(event: bot.SimpleBotEvent, state_manager: VkWaveStateManager):
-    print(await state_manager.get_data)
+    print(await state_manager.data)
     await event.answer("go to home")
     await state_manager.back_to_pre_state()
 

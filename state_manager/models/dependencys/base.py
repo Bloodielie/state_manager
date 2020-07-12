@@ -4,8 +4,6 @@ from pydantic import BaseModel
 
 from state_manager.models.state import StateData
 from state_manager.storage.base import BaseStorage
-from abc import abstractmethod
-
 from state_manager.types import Data
 
 
@@ -21,29 +19,27 @@ class Depends:
 class BaseStateManager(BaseModel):
     storage: BaseStorage
 
-    @abstractmethod
     async def set_next_state(self, state_name: str, *, data: Data = None) -> None:
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
     async def back_to_pre_state(self, *, data: Data = None) -> None:
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
-    async def get_data(self) -> Data:
-        pass
+    @property
+    async def data(self) -> Data:
+        raise NotImplementedError
 
-    @abstractmethod
-    async def get_storage(self) -> StateData:
-        pass
+    @property
+    async def state_data(self) -> StateData:
+        raise NotImplementedError
 
-    @abstractmethod
-    async def get_current_state(self) -> str:
-        pass
+    @property
+    async def current_state(self) -> str:
+        raise NotImplementedError
 
-    @abstractmethod
-    async def get_pre_state(self) -> str:
-        pass
+    @property
+    async def pre_state(self) -> str:
+        raise NotImplementedError
 
     class Config:
         arbitrary_types_allowed = True

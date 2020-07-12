@@ -22,22 +22,22 @@ class AiogramStateManager(BaseStateManager):
         await back_to_pre_state_(self.storage, self.context.from_user.id, data)
 
     @property
-    async def get_data(self) -> Data:
-        return (await self._get_storage()).data
+    async def data(self) -> Data:
+        return (await self._get_state_data()).data
 
     @property
-    async def get_current_state(self) -> str:
-        return (await self._get_storage()).current_state
+    async def current_state(self) -> str:
+        return (await self._get_state_data()).current_state
 
     @property
-    async def get_pre_state(self) -> str:
-        return (await self._get_storage()).pre_state
+    async def pre_state(self) -> str:
+        return (await self._get_state_data()).pre_state
 
     @property
-    async def get_storage(self) -> StateData:
-        return await self._get_storage()
+    async def state_data(self) -> StateData:
+        return await self._get_state_data()
 
-    async def _get_storage(self) -> StateData:
+    async def _get_state_data(self) -> StateData:
         logger.debug(f"get_storage")
         return await self.storage.get(self.context.from_user.id)
 

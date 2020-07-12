@@ -6,7 +6,6 @@ from state_manager import VkWaveMainRouter, VkWaveStateManager
 
 logging.basicConfig(level=logging.INFO)
 
-
 bot = SimpleLongPollBot(tokens="your token", group_id=123123,)
 main_state = VkWaveMainRouter(bot)
 
