@@ -30,7 +30,9 @@ class AiogramStateMiddleware(BaseMiddleware):
     async def on_post_process_message(self, message: types.Message, _, data: dict) -> None:
         if data:
             return
-        await self.post_process_handlers(message, "message")
+        handler_result = await self.post_process_handlers(message, "message")
+        if handler_result is not None and isinstance(handler_result, str):
+            await message.answer(handler_result)
 
     async def on_post_process_callback_query(self, callback_query: types.CallbackQuery, _, data: dict) -> None:
         if data:
@@ -52,7 +54,7 @@ class AiogramStateMiddleware(BaseMiddleware):
         state_name = await self._get_user_state_name(ctx)
         if handler := await self._handler_finder.get_state_handler(dependency_storage, state_name, event_type):
             func_attr = await get_func_attributes(handler, dependency_storage)
-            await check_function_and_run(handler, **func_attr)
+            return await check_function_and_run(handler, **func_attr)
 
     async def _get_user_state_name(self, ctx: Context) -> str:
         user_id = ctx.from_user.id

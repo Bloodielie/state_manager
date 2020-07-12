@@ -57,7 +57,9 @@ class VkWaveMainRouter(VkWaveRouter):
         state_name = await self._get_user_state_name(event)
         if handler := await self._handler_finder.get_state_handler(dependency_storage, state_name, "message"):
             func_attr = await get_func_attributes(handler, dependency_storage)
-            await check_function_and_run(handler, **func_attr)
+            handler_result = await check_function_and_run(handler, **func_attr)
+            if handler_result is not None and isinstance(handler_result, str):
+                await event.answer(handler_result)
 
     async def _get_user_state_name(self, event: BotEvent) -> str:
         user_id = str(event.object.object.message.from_id)

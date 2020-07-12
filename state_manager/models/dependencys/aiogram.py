@@ -26,6 +26,14 @@ class AiogramStateManager(BaseStateManager):
         return (await self._get_storage()).data
 
     @property
+    async def get_current_state(self) -> str:
+        return (await self._get_storage()).current_state
+
+    @property
+    async def get_pre_state(self) -> str:
+        return (await self._get_storage()).pre_state
+
+    @property
     async def get_storage(self) -> StateData:
         return await self._get_storage()
 

@@ -37,6 +37,14 @@ class BaseStateManager(BaseModel):
     async def get_storage(self) -> StateData:
         pass
 
+    @abstractmethod
+    async def get_current_state(self) -> str:
+        pass
+
+    @abstractmethod
+    async def get_pre_state(self) -> str:
+        pass
+
     class Config:
         arbitrary_types_allowed = True
 
