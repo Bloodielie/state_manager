@@ -12,6 +12,9 @@ from state_manager.storage_settings import StorageSettings
 from state_manager.utils.check import check_function_and_run
 from state_manager.utils.dependency import dependency_storage_factory, get_func_attributes
 from state_manager.utils.search import HandlerFinder
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class VkWaveRouter(BaseRouter):
@@ -33,8 +36,10 @@ class VkWaveMainRouter(VkWaveRouter):
         *,
         storage: Optional[Type[BaseStorage]] = None,
         default_state_name: Optional[str] = None,
-        is_cached: bool = True
+        is_cached: bool = True,
     ) -> None:
+        logger.info(f"Install VkWaveMainRouter")
+        logger.debug(f"install, {storage=}, {default_state_name=}, {is_cached=}")
         self._handler_finder = HandlerFinder(self, is_cached)
         self._storage = storage or redis.RedisStorage(StorageSettings())
         self._default_state_name = default_state_name or "home"

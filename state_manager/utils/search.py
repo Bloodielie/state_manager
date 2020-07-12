@@ -5,6 +5,9 @@ from typing import Callable, Optional, Set, Dict, Tuple
 from state_manager.models.dependencys.base import BaseDependencyStorage
 from state_manager.storage.state_storage import StateStorage
 from state_manager.utils.dependency import get_func_attributes
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class HandlerFinder:
@@ -17,6 +20,9 @@ class HandlerFinder:
         self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
     ) -> Optional[Callable]:
         if self._is_cache:
+            logger.debug(
+                f"Get state handler in cache, state_name:{state_name}, event_type:{event_type}, dependency_storage:{dependency_storage}"
+            )
             if handler := self._handler_in_cache.get((state_name, event_type)):
                 return handler
 

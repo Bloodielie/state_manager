@@ -5,6 +5,9 @@ from aiogram import Dispatcher
 from state_manager.middlewares.aiogram import AiogramStateMiddleware
 from state_manager.routes.base import BaseRouter
 from state_manager.storage.base import BaseStorage
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class AiogramRouter(BaseRouter):
@@ -45,6 +48,8 @@ class AiogramMainRouter(AiogramRouter):
         *,
         storage: Optional[Type[BaseStorage]] = None,
         default_state_name: Optional[str] = None,
-        is_cached: bool = True
+        is_cached: bool = True,
     ) -> None:
+        logger.info(f"Install AiogramMainRouter")
+        logger.debug(f"install, {storage=}, {default_state_name=}, {is_cached=}")
         self.dispatcher.middleware.setup(AiogramStateMiddleware(self, storage, default_state_name, is_cached))

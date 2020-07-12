@@ -5,9 +5,13 @@ from state_manager.models.dependencys.aiogram import AiogramDependencyStorage, A
 from state_manager.models.dependencys.base import Depends, BaseDependencyStorage
 from state_manager.models.dependencys.vkwave import VkWaveDependencyStorage, VkWaveStateManager
 from state_manager.utils.check import check_function_and_run
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 async def get_func_attributes(function: Callable, dependency_storage: BaseDependencyStorage):
+    logger.debug(f"Get func attr, {function=}, {dependency_storage=}")
     func_arg = {}
     dependencies = dependency_storage.fields.values()
     for attr_name, parameter in inspect.signature(function).parameters.items():
@@ -30,7 +34,9 @@ async def get_func_attributes(function: Callable, dependency_storage: BaseDepend
 def dependency_storage_factory(*, lib: str = "aiogram", **kwargs) -> BaseDependencyStorage:
     if lib == "aiogram":
         kwargs["state_manager"] = AiogramStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
+        logger.debug(f"Create AiogramDependencyStorage, {kwargs=}")
         return AiogramDependencyStorage(**kwargs)
     elif lib == "vkwave":
         kwargs["state_manager"] = VkWaveStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
+        logger.debug(f"Create VkWaveDependencyStorage, {kwargs=}")
         return VkWaveDependencyStorage(**kwargs)
