@@ -1,7 +1,6 @@
 from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
 
-from state_manager.models.dependencys.vkwave import VkWaveStateManager
-from state_manager.routes.vkwave import VkWaveRouter
+from state_manager import VkWaveRouter, VkWaveStateManager
 
 state_router = VkWaveRouter()
 

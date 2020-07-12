@@ -1,9 +1,8 @@
 from vkwave.bots import SimpleLongPollBot
 
-from state_manager.models.dependencys.vkwave import VkWaveStateManager
-from state_manager.routes.vkwave import VkWaveMainRouter
-
 import logging
+
+from state_manager import VkWaveStateManager, VkWaveMainRouter
 
 logging.basicConfig(level=logging.INFO)
 
