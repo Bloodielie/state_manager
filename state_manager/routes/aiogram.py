@@ -40,7 +40,7 @@ class AiogramMainRouter(AiogramRouter):
         super().__init__()
         self.dispatcher = dispatcher or Dispatcher.get_current()
 
-    def install_middleware(
+    def install(
         self,
         *,
         storage: Optional[Type[BaseStorage]] = None,

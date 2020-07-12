@@ -24,19 +24,21 @@ class VkWaveRouter(BaseRouter):
 
 
 class VkWaveMainRouter(VkWaveRouter):
-    def __init__(
-        self,
-        bot: Optional[SimpleLongPollBot],
-        default_state_name: Optional[str] = None,
-        storage: Optional[Type[BaseStorage]] = None,
-    ) -> None:
+    def __init__(self, bot: Optional[SimpleLongPollBot]) -> None:
         super().__init__()
         self.bot = bot
-        self._default_state_name = default_state_name or "home"
-        self._storage = storage or redis.RedisStorage(StorageSettings())
 
-    def install_middleware(self, *, is_cached: bool = True) -> None:
+    def install(
+        self,
+        *,
+        storage: Optional[Type[BaseStorage]] = None,
+        default_state_name: Optional[str] = None,
+        is_cached: bool = True
+    ) -> None:
         self._handler_finder = HandlerFinder(self, is_cached)
+        self._storage = storage or redis.RedisStorage(StorageSettings())
+        self._default_state_name = default_state_name or "home"
+
         record = self.bot.router.registrar.new()
         record.filters.append(EventTypeFilter(BotEventType.MESSAGE_NEW))
         record.handle(self.bot.SimpleBotCallback(self._message_handler, self.bot.bot_type))

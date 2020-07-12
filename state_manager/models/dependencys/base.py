@@ -6,6 +6,8 @@ from state_manager.models.state import StateData
 from state_manager.storage.base import BaseStorage
 from abc import abstractmethod
 
+from state_manager.types import Data
+
 
 class Depends:
     def __init__(self, dependency: Callable) -> None:
@@ -20,11 +22,19 @@ class BaseStateManager(BaseModel):
     storage: BaseStorage
 
     @abstractmethod
-    async def set_next_state(self, state_name: str, *, data: Optional[dict] = None) -> None:
+    async def set_next_state(self, state_name: str, *, data: Data = None) -> None:
         pass
 
     @abstractmethod
-    async def back_to_pre_state(self, *, data: Optional[dict] = None) -> None:
+    async def back_to_pre_state(self, *, data: Data = None) -> None:
+        pass
+
+    @abstractmethod
+    async def get_data(self) -> Data:
+        pass
+
+    @abstractmethod
+    async def get_storage(self) -> StateData:
         pass
 
     class Config:
@@ -33,6 +43,7 @@ class BaseStateManager(BaseModel):
 
 class BaseDependencyStorage(BaseModel):
     storage: BaseStorage
+    state_manager: Optional[BaseStateManager] = None
 
     class Config:
         arbitrary_types_allowed = True

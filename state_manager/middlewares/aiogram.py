@@ -13,7 +13,6 @@ from state_manager.utils.dependency import get_func_attributes, dependency_stora
 from state_manager.utils.search import HandlerFinder
 
 
-# todo: add support other async lib for bots
 class AiogramStateMiddleware(BaseMiddleware):
     def __init__(
         self,
@@ -29,7 +28,6 @@ class AiogramStateMiddleware(BaseMiddleware):
         super().__init__()
 
     async def on_post_process_message(self, message: types.Message, _, data: dict) -> None:
-        print(data)
         if data:
             return
         await self.post_process_handlers(message, "message")

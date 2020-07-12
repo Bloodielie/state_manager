@@ -1,9 +1,8 @@
-from typing import Callable, Optional, Set, Tuple, Any, Type
+from abc import ABC
+from typing import Callable, Optional, Set, Tuple, Any
 
 from state_manager.models.state import StateModel
-from state_manager.storage.base import BaseStorage
 from state_manager.storage.state_storage import StateStorage
-from abc import ABC, abstractmethod
 
 
 class BaseRouter(ABC):
@@ -27,15 +26,3 @@ class BaseRouter(ABC):
 
     def include_router(self, router: "BaseRouter") -> None:
         self.routers.add(router)
-
-
-class BaseMainRouter(BaseRouter):
-    @abstractmethod
-    def install_middleware(
-        self,
-        *,
-        storage: Optional[Type[BaseStorage]] = None,
-        default_state_name: Optional[str] = None,
-        is_cached: bool = True
-    ) -> None:
-        pass

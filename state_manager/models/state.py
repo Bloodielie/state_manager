@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Tuple, Any
+from typing import Callable, Optional, Any
 
 from pydantic import BaseModel
 
