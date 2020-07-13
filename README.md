@@ -77,6 +77,29 @@ executor.start_polling(dp, skip_updates=True)
 ```
 [more examples](https://github.com/Bloodielie/state_manager/tree/master/examples)
 
+## Storage
+The library currently supports:
+- RedisStorage
+- MemoryStorage
+
+If you do not pass arguments to install, Redis Storage is used, which takes the settings from env.  
+
+Settings:
+- storage_dsn, default: "redis://localhost:6379"
+- storage_ssl, default: None
+- storage_db: default: None
+- pool_size: default: 10
+- storage_timeout: default: 5
+
+## Filters
+The library supports out of the box:
+- text_filter
+- text_contains_filter
+- regex_filter
+
+You can also write your filters.
+[aiogram](https://github.com/Bloodielie/state_manager/tree/master/examples/aiogram/their_filters.py), [vkwave](https://github.com/Bloodielie/state_manager/tree/master/examples/vkwave/their_filters.py)
+
 ## Architecture
 
 **Search state in routers**

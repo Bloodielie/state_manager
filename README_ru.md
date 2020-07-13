@@ -75,6 +75,29 @@ executor.start_polling(dp, skip_updates=True)
 ```
 [more examples](https://github.com/Bloodielie/state_manager/tree/master/examples)
 
+## Хранилища состояний
+На данный момент библиотека поддерживает:
+- RedisStorage
+- MemoryStorage
+
+Если не передать аргументы в install используется Redis Storage, который берет настройки из env.
+Настройки:
+- storage_dsn, default: "redis://localhost:6379"
+- storage_ssl, default: None
+- storage_db: default: None
+- pool_size: default: 10
+- storage_timeout: default: 5
+
+## Фильтры
+Библиотека поддерживает из коробки:
+- text_filter
+- text_contains_filter
+- regex_filter
+
+Также вы можете написать свои фильтры.  
+[aiogram](https://github.com/Bloodielie/state_manager/tree/master/examples/aiogram/their_filters.py), [vkwave](https://github.com/Bloodielie/state_manager/tree/master/examples/vkwave/their_filters.py)
+
+
 ## Архитектура
 
 **Поиск состояния в роутерах**
