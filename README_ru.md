@@ -1,16 +1,14 @@
 # StateManager - fsm for people
-> Convenient FSM implementation for telegram/vk
-
-[Russian version](https://github.com/Bloodielie/state_manager/tree/master/README_ru.md)
+> Удобная реализация FSM для telegram/vk
 ___
-## Installation
-Using PyPi:
+## Установка
+С помощью PyPi:
    
 ```sh
 coming soon
 ```
 
-## Examples
+## Примеры
 
 [VkWave](https://github.com/fscdev/vkwave)
 ```python
@@ -64,12 +62,12 @@ executor.start_polling(dp, skip_updates=True)
 ```
 [more examples](https://github.com/Bloodielie/state_manager/tree/master/examples)
 
-## Architecture
+## Архитектура
 
-**Search state in routers**
+**Поиск состояния в роутерах**
 
 ![alt text](images/architecture_1.png)
 ___
-**Router architecture**
+**Архитектуры роутеров**
 
 ![alt text](images/architecture_2.png)
