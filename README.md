@@ -7,6 +7,7 @@ ___
 ```sh
 coming soon
 ```
+
 ##Примеры
 
 [VkWave](https://github.com/fscdev/vkwave)
@@ -59,6 +60,7 @@ async def home2(msg: types.Message, state_manager: AiogramStateManager):
 
 executor.start_polling(dp, skip_updates=True)
 ```
+
 ##Архитектура
 
 **Поиск состояния в роутерах**
