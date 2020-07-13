@@ -4,10 +4,23 @@
 [Russian version](https://github.com/Bloodielie/state_manager/tree/master/README_ru.md)
 ___
 ## Installation
-Using PyPi:
-   
+`Supports python3.8+`
+
+Library only
 ```sh
-coming soon
+pip install state-manager
+```
+Library and vkwave
+```sh
+pip install state-manager[vk]
+```
+Library and aiogram
+```sh
+pip install state-manager[telegram]
+```
+Full installation
+```sh
+pip install state-manager[full]
 ```
 
 ## Examples

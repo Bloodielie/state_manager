@@ -2,10 +2,23 @@
 > Удобная реализация FSM для telegram/vk
 ___
 ## Установка
-С помощью PyPi:
-   
+`Поддерживает python3.8+`
+
+Только библиотеку
 ```sh
-coming soon
+pip install state-manager
+```
+Библиотека и vkwave
+```sh
+pip install state-manager[vk]
+```
+Библиотека и aiogram
+```sh
+pip install state-manager[telegram]
+```
+Полная установка
+```sh
+pip install state-manager[full]
 ```
 
 ## Примеры
