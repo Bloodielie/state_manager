@@ -2,7 +2,7 @@ from vkwave.bots import SimpleLongPollBot
 
 import logging
 
-from state_manager import VkWaveStateManager, VkWaveMainRouter
+from state_manager import VkWaveStateManager, VkWaveMainRouter, MemoryStorage
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,5 +27,5 @@ async def home2(state_manager: VkWaveStateManager):
     return "go to home3"
 
 
-main_state.install()
+main_state.install(storage=MemoryStorage())
 bot.run_forever(ignore_errors=True)

@@ -1,9 +1,10 @@
-from asyncio import iscoroutinefunction
 from functools import partial
-from typing import Callable, Optional, Set, Dict, Tuple
+from typing import Callable, Optional, Set, Dict, Tuple, Any, Union
 
+from state_manager.filters.base import BaseFilter
 from state_manager.models.dependencys.base import BaseDependencyStorage
 from state_manager.storage.state_storage import StateStorage
+from state_manager.utils.check import check_function_and_run
 from state_manager.utils.dependency import get_func_attributes
 from logging import getLogger
 
@@ -67,14 +68,19 @@ class HandlerFinder:
             if handler := await cls._search_handler_in_routes(router.routers, search_func):
                 return handler
 
-    @staticmethod
-    async def _run_filter(filter, dependency_storage):
-        filter_attr = await get_func_attributes(filter, dependency_storage)
-        if iscoroutinefunction(filter):
-            result = await filter(**filter_attr)
+    async def _run_filter(self, filter: Union[Callable, BaseFilter], dependency_storage: BaseDependencyStorage) -> bool:
+        if isinstance(filter, BaseFilter):
+            filter_attr = await get_func_attributes(filter.check, dependency_storage)
+            result = await check_function_and_run(filter.check, **filter_attr)
+            return self.check_filter_result(result)
         else:
-            result = filter(**filter_attr)
-        if isinstance(result, bool):
-            return result
-        logger.warning(f"Filter return no bool, {filter=}, {result=}")
+            filter_attr = await get_func_attributes(filter, dependency_storage)
+            result = await check_function_and_run(filter, **filter_attr)
+            return self.check_filter_result(result)
+
+    @staticmethod
+    def check_filter_result(filter_result: Any) -> bool:
+        if isinstance(filter_result, bool):
+            return filter_result
+        logger.warning(f"Filter return no bool, {filter_result=}")
         return False

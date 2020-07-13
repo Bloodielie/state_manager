@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher, executor, types
 
 from state_manager import AiogramStateManager, MemoryStorage
 from state_manager.routes.aiogram import AiogramMainRouter
+from state_manager.filters.aiogram import text_filter, text_contains_filter, regex_filter
 
 logging.basicConfig(level=logging.INFO)
 
@@ -13,17 +14,16 @@ main_state = AiogramMainRouter(dp)
 main_state.install(storage=MemoryStorage())
 
 
-@main_state.message_handler()
+@main_state.message_handler(text_filter("111"))
 async def home(msg: types.Message, state_manager: AiogramStateManager):
     await msg.answer("go to home2")
-    await state_manager.set_next_state("home2", data="Test data")
+    await state_manager.set_next_state("home2")
 
 
-@main_state.message_handler()
+@main_state.message_handler(text_contains_filter("yes"))
 async def home2(msg: types.Message, state_manager: AiogramStateManager):
-    print(await state_manager.data)
     await msg.answer("go to home")
-    await state_manager.back_to_pre_state()
+    await state_manager.set_next_state("home")
 
 
 if __name__ == '__main__':

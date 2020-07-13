@@ -4,7 +4,7 @@ from slave import state_router
 
 import logging
 
-from state_manager import VkWaveMainRouter
+from state_manager import VkWaveMainRouter, MemoryStorage
 
 logging.basicConfig(level=logging.INFO)
 
@@ -14,5 +14,5 @@ main_state = VkWaveMainRouter(bot)
 main_state.include_router(state_router)
 
 
-main_state.install()
+main_state.install(storage=MemoryStorage())
 bot.run_forever(ignore_errors=True)
