@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Type, Any
+from typing import Callable, Optional, Any
 
 from vkwave.bots import SimpleLongPollBot, BotEvent, EventTypeFilter
 from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
@@ -34,7 +34,7 @@ class VkWaveMainRouter(VkWaveRouter):
     def install(
         self,
         *,
-        storage: Optional[Type[BaseStorage]] = None,
+        storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True,
     ) -> None:

@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Type, Tuple, Any
+from typing import Callable, Optional, Tuple, Any
 
 from aiogram import Dispatcher
 
@@ -46,7 +46,7 @@ class AiogramMainRouter(AiogramRouter):
     def install(
         self,
         *,
-        storage: Optional[Type[BaseStorage]] = None,
+        storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True,
     ) -> None:
