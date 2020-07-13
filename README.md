@@ -60,6 +60,7 @@ async def home2(msg: types.Message, state_manager: AiogramStateManager):
 
 executor.start_polling(dp, skip_updates=True)
 ```
+[more examples](https://github.com/Bloodielie/state_manager/tree/master/examples)
 
 ## Архитектура
 
@@ -67,6 +68,6 @@ executor.start_polling(dp, skip_updates=True)
 
 ![alt text](images/architecture_1.png)
 ___
-**Пример архитектуры роутеров**
+**Архитектуры роутеров**
 
 ![alt text](images/architecture_2.png)
