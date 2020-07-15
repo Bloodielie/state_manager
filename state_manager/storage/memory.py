@@ -11,7 +11,7 @@ class MemoryStorage(BaseStorage):
     def __init__(self):
         self.data = {}
 
-    async def close(self):
+    async def close(self) -> None:
         self.data.clear()
 
     async def get(self, key: str, default: typing.Optional[StateData] = None) -> typing.Optional[StateData]:

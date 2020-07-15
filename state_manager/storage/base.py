@@ -1,10 +1,11 @@
 import typing
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from state_manager.models.state import StateData
 
 
-class BaseStorage(ABC):
+@typing.runtime_checkable
+class BaseStorage(typing.Protocol):
     @abstractmethod
     async def get(self, key: str, default: typing.Optional[StateData] = None) -> typing.Optional[StateData]:
         raise NotImplementedError
