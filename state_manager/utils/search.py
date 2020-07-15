@@ -1,21 +1,27 @@
 from functools import partial
+from logging import getLogger
 from typing import Callable, Optional, Set, Dict, Tuple, Any, Union
 
 from state_manager.filters.base import BaseFilter
 from state_manager.models.dependencys.base import BaseDependencyStorage
+from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storage.state_storage import StateStorage
 from state_manager.utils.check import check_function_and_run
 from state_manager.utils.dependency import get_func_attributes
-from logging import getLogger
 
 logger = getLogger(__name__)
 
 
 class HandlerFinder:
-    def __init__(self, main_router: "MainStateRouter", is_cache: bool = False) -> None:
+    def __init__(self, main_router: BaseMainRouter, is_cache: bool = False) -> None:
         self._main_router = main_router
         self._is_cache = is_cache
-        self._handler_in_cache: Dict[Tuple[str, str], Tuple[Callable, Callable]] = {} if self._is_cache else None
+        self._handler_in_cache: Dict[Tuple[str, str], Tuple[Callable, Callable]] = {}
+
+    async def get_handler_and_run(self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str):
+        if handler := await self.get_state_handler(dependency_storage, state_name, event_type):
+            func_attr = await get_func_attributes(handler, dependency_storage)
+            return await check_function_and_run(handler, **func_attr)
 
     async def get_state_handler(
         self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
@@ -59,7 +65,7 @@ class HandlerFinder:
                 return state.handler
 
     @classmethod
-    async def _search_handler_in_routes(cls, routes: Set["StateRouter"], search_func: Callable) -> Optional[Callable]:
+    async def _search_handler_in_routes(cls, routes: Set[BaseRouter], search_func: Callable) -> Optional[Callable]:
         if not isinstance(routes, set):
             return None
         for router in routes:

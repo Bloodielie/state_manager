@@ -25,10 +25,10 @@ class RedisStorage(BaseStorage):
         self._kwargs = kwargs
         self._storage_settings = storage_settings
 
-        self._host = storage_settings.storage_dsn.host
-        self._port = storage_settings.storage_dsn.port
+        self._host = storage_settings.storage_dsn.host  # type: ignore
+        self._port = storage_settings.storage_dsn.port  # type: ignore
+        self._password = storage_settings.storage_dsn.password  # type: ignore
         self._db = storage_settings.storage_db
-        self._password = storage_settings.storage_dsn.password
         self._ssl = storage_settings.storage_ssl
         self._pool_size = storage_settings.pool_size
         self._timeout = storage_settings.storage_timeout
@@ -53,7 +53,7 @@ class RedisStorage(BaseStorage):
             await conn.set(key, value.json())
         await conn.set(key, value.json())
 
-    async def delete(self, key: str) -> typing.Optional[typing.NoReturn]:
+    async def delete(self, key: str) -> None:
         logger.debug(f"delete, {key=}")
         if not await self.contains(key):
             raise KeyError("Storage doesn't contain this key.")

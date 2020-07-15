@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Callable, Optional
 
 from pydantic import BaseModel
@@ -26,20 +27,27 @@ class BaseStateManager(BaseModel):
         raise NotImplementedError
 
     @property
-    async def data(self) -> Data:
-        raise NotImplementedError
+    async def data(self) -> Optional[Data]:
+        data = await self._get_state_data()
+        return data.data if data is not None else None
 
     @property
-    async def state_data(self) -> StateData:
-        raise NotImplementedError
+    async def current_state(self) -> Optional[str]:
+        data = await self._get_state_data()
+        return data.current_state if data is not None else None
 
     @property
-    async def current_state(self) -> str:
-        raise NotImplementedError
+    async def pre_state(self) -> Optional[str]:
+        data = await self._get_state_data()
+        return data.pre_state if data is not None else None
 
     @property
-    async def pre_state(self) -> str:
-        raise NotImplementedError
+    async def state_data(self) -> Optional[StateData]:
+        return await self._get_state_data()
+
+    @abstractmethod
+    async def _get_state_data(self) -> Optional[StateData]:
+        pass
 
     class Config:
         arbitrary_types_allowed = True
@@ -53,8 +61,10 @@ class BaseDependencyStorage(BaseModel):
         arbitrary_types_allowed = True
 
 
-async def back_to_pre_state_(storage: BaseStorage, user_id: str, data: Optional[dict]) -> None:
+async def back_to_pre_state_(storage: BaseStorage, user_id: str, data: Data) -> None:
     state = await storage.get(user_id)
+    if state is None:
+        raise ValueError("Type of state not supported")
     if state.pre_state is None:
         state_data = StateData(current_state=state.current_state, data=data)
     else:

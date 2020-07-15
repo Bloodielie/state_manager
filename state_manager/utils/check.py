@@ -24,9 +24,7 @@ async def check_function_and_run(func: Callable[..., T], *args: Any, **kwargs: A
         return await run_in_threadpool(func, *args, **kwargs)
 
 
-async def run_in_threadpool(
-    func: Callable[..., T], *args: Any, **kwargs: Any
-) -> T:
+async def run_in_threadpool(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     loop = asyncio.get_event_loop()
     if contextvars is not None:
         child = functools.partial(func, *args, **kwargs)

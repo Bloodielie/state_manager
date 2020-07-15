@@ -1,23 +1,22 @@
-from typing import Optional, Type
+from typing import Optional
 
 from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 
-from state_manager.models.state import StateData
 from state_manager.storage import redis
 from state_manager.storage.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
 from state_manager.types import Context
-from state_manager.utils.check import check_function_and_run
-from state_manager.utils.dependency import get_func_attributes, dependency_storage_factory
+from state_manager.utils.dependency import dependency_storage_factory
 from state_manager.utils.search import HandlerFinder
+from state_manager.utils.utils import get_user_state_name
 
 
 class AiogramStateMiddleware(BaseMiddleware):
     def __init__(
         self,
         main_router: "AiogramMainRouter",
-        storage: Optional[Type[BaseStorage]] = None,
+        storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True,
     ) -> None:
@@ -52,14 +51,8 @@ class AiogramStateMiddleware(BaseMiddleware):
             storage=self._storage,
         )
         state_name = await self._get_user_state_name(ctx)
-        if handler := await self._handler_finder.get_state_handler(dependency_storage, state_name, event_type):
-            func_attr = await get_func_attributes(handler, dependency_storage)
-            return await check_function_and_run(handler, **func_attr)
+        return await self._handler_finder.get_handler_and_run(dependency_storage, state_name, event_type)
 
     async def _get_user_state_name(self, ctx: Context) -> str:
         user_id = ctx.from_user.id
-        user_state = await self._storage.get(user_id)
-        if not user_state:
-            user_state = StateData(current_state=self._default_state_name)
-            await self._storage.put(user_id, user_state)
-        return user_state.current_state
+        return await get_user_state_name(user_id, self._storage, self._default_state_name)

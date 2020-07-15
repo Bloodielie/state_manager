@@ -5,7 +5,7 @@ from pydantic import BaseModel
 try:
     import ujson as json
 except ImportError:
-    import json
+    import json  # type: ignore
 
 
 class StateModel(BaseModel):

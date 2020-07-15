@@ -1,8 +1,8 @@
 import typing
+from logging import getLogger
 
 from state_manager import BaseStorage
 from state_manager.models.state import StateData
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -28,7 +28,7 @@ class MemoryStorage(BaseStorage):
             self.data[key] = value.json()
         self.data[key] = value.json()
 
-    async def delete(self, key: str) -> typing.Optional[typing.NoReturn]:
+    async def delete(self, key: str) -> None:
         logger.debug(f"delete, {key=}")
         if not await self.contains(key):
             raise KeyError("Storage doesn't contain this key.")

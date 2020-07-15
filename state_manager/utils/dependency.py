@@ -1,4 +1,5 @@
 import inspect
+from logging import getLogger
 from typing import Callable, Dict, Any, TypeVar
 
 from pydantic.typing import ForwardRef, evaluate_forwardref
@@ -7,7 +8,6 @@ from state_manager.models.dependencys.aiogram import AiogramDependencyStorage, A
 from state_manager.models.dependencys.base import Depends, BaseDependencyStorage
 from state_manager.models.dependencys.vkwave import VkWaveDependencyStorage, VkWaveStateManager
 from state_manager.utils.check import check_function_and_run
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -19,10 +19,7 @@ def get_typed_signature(call: Callable) -> inspect.Signature:
     globalns = getattr(call, "__globals__", {})
     typed_params = [
         inspect.Parameter(
-            name=param.name,
-            kind=param.kind,
-            default=param.default,
-            annotation=get_typed_annotation(param, globalns),
+            name=param.name, kind=param.kind, default=param.default, annotation=get_typed_annotation(param, globalns),
         )
         for param in signature.parameters.values()
     ]
@@ -33,12 +30,12 @@ def get_typed_signature(call: Callable) -> inspect.Signature:
 def get_typed_annotation(param: inspect.Parameter, globalns: Dict[str, Any]) -> Any:
     annotation = param.annotation
     if isinstance(annotation, str):
-        annotation = ForwardRef(annotation)
+        annotation = ForwardRef(annotation)  # type: ignore
         annotation = evaluate_forwardref(annotation, globalns, globalns)
     return annotation
 
 
-async def get_func_attributes(function: Callable[..., T], dependency_storage: BaseDependencyStorage) -> T:
+async def get_func_attributes(function: Callable[..., T], dependency_storage: BaseDependencyStorage) -> Dict[str, Any]:
     logger.debug(f"Get func attr, {function=}, {dependency_storage=}")
     func_arg = {}
     for attr_name, parameter in get_typed_signature(function).parameters.items():
@@ -55,7 +52,7 @@ async def get_func_attributes(function: Callable[..., T], dependency_storage: Ba
             func_arg[attr_name] = getattr(dependency_storage, dependency.name, None)
 
         if not func_arg:
-            func_arg[attr_name] = dependency_storage.context
+            func_arg[attr_name] = dependency_storage.context  # type: ignore
     return func_arg
 
 
@@ -68,3 +65,5 @@ def dependency_storage_factory(*, lib: str = "aiogram", **kwargs) -> BaseDepende
         kwargs["state_manager"] = VkWaveStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
         logger.debug(f"Create VkWaveDependencyStorage, {kwargs=}")
         return VkWaveDependencyStorage(**kwargs)
+    else:
+        raise ValueError("library not found")

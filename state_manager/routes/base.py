@@ -1,9 +1,10 @@
-from abc import ABC
-from typing import Callable, Optional, Set, Tuple, Any, Union
+from abc import ABC, abstractmethod
+from logging import getLogger
+from typing import Callable, Optional, Set, Tuple, Union
 
 from state_manager.models.state import StateModel
+from state_manager.storage.base import BaseStorage
 from state_manager.storage.state_storage import StateStorage
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -19,7 +20,7 @@ class BaseRouter(ABC):
         handler: Callable,
         *,
         state_name: Optional[Union[str, list, tuple]] = None,
-        filters: Optional[Tuple[Callable[[Any], bool]]] = None,
+        filters: Optional[Tuple[Callable[..., bool], ...]] = None,
     ) -> None:
         if isinstance(state_name, str) or state_name is None:
             state_names = [state_name]
@@ -36,3 +37,15 @@ class BaseRouter(ABC):
     def include_router(self, router: "BaseRouter") -> None:
         logger.debug(f"include_router, {router=}")
         self.routers.add(router)
+
+
+class BaseMainRouter(BaseRouter):
+    @abstractmethod
+    def install(
+        self,
+        *,
+        storage: Optional[BaseStorage] = None,
+        default_state_name: Optional[str] = None,
+        is_cached: bool = True,
+    ) -> None:
+        ...
