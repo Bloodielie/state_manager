@@ -3,8 +3,8 @@ from logging import getLogger
 from typing import Callable, Optional, Set, Tuple, Union, List
 
 from state_manager.models.state import StateModel
-from state_manager.storage.base import BaseStorage
-from state_manager.storage.state_storage import StateStorage
+from state_manager.storages.base import BaseStorage
+from state_manager.storages.state_storage import StateStorage
 
 logger = getLogger(__name__)
 

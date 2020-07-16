@@ -3,8 +3,8 @@ from typing import Optional
 from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 
-from state_manager.storage import redis
-from state_manager.storage.base import BaseStorage
+from state_manager.storages import redis
+from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
 from state_manager.types import Context
 from state_manager.utils.dependency import dependency_storage_factory

@@ -1,5 +1,5 @@
 from state_manager.models.state import StateData
-from state_manager.storage.base import BaseStorage
+from state_manager.storages.base import BaseStorage
 
 
 async def get_user_state_name(user_id: str, storage: BaseStorage, default: str) -> str:

@@ -2,7 +2,7 @@ import asyncio
 import typing
 
 from state_manager.models.state import StateData
-from state_manager.storage.base import BaseStorage
+from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
 from logging import getLogger
 

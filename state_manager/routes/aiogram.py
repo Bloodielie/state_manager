@@ -5,7 +5,7 @@ from aiogram import Dispatcher
 
 from state_manager.middlewares.aiogram import AiogramStateMiddleware
 from state_manager.routes.base import BaseRouter, BaseMainRouter
-from state_manager.storage.base import BaseStorage
+from state_manager.storages.base import BaseStorage
 
 logger = getLogger(__name__)
 

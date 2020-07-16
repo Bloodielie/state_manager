@@ -6,8 +6,8 @@ from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
 from vkwave.types.bot_events import BotEventType
 
 from state_manager.routes.base import BaseRouter, BaseMainRouter
-from state_manager.storage import redis
-from state_manager.storage.base import BaseStorage
+from state_manager.storages import redis
+from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
 from state_manager.utils.dependency import dependency_storage_factory
 from state_manager.utils.search import HandlerFinder

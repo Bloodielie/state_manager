@@ -3,6 +3,6 @@ from state_manager.models.dependencys.base import Depends, BaseStateManager
 from state_manager.models.dependencys.vkwave import VkWaveStateManager
 from state_manager.routes.aiogram import AiogramRouter, AiogramMainRouter
 from state_manager.routes.vkwave import VkWaveRouter, VkWaveMainRouter
-from state_manager.storage.base import BaseStorage
-from state_manager.storage.memory import MemoryStorage
-from state_manager.storage.redis import RedisStorage
+from state_manager.storages.base import BaseStorage
+from state_manager.storages.memory import MemoryStorage
+from state_manager.storages.redis import RedisStorage

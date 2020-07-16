@@ -5,7 +5,7 @@ from typing import Callable, Optional, Set, Dict, Tuple, Any, Union
 from state_manager.filters.base import BaseFilter
 from state_manager.models.dependencys.base import BaseDependencyStorage
 from state_manager.routes.base import BaseRouter, BaseMainRouter
-from state_manager.storage.state_storage import StateStorage
+from state_manager.storages.state_storage import StateStorage
 from state_manager.utils.check import check_function_and_run
 from state_manager.utils.dependency import get_func_attributes
 

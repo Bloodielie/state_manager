@@ -3,7 +3,7 @@ from vkwave.bots import SimpleLongPollBot
 import logging
 
 from state_manager import VkWaveMainRouter, VkWaveStateManager, Depends, MemoryStorage
-from state_manager.storage.base import BaseStorage
+from state_manager.storages.base import BaseStorage
 
 logging.basicConfig(level=logging.INFO)
 

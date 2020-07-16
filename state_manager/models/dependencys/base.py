@@ -4,7 +4,7 @@ from typing import Callable, Optional
 from pydantic import BaseModel
 
 from state_manager.models.state import StateData
-from state_manager.storage.base import BaseStorage
+from state_manager.storages.base import BaseStorage
 from state_manager.types import Data
 
 
