@@ -28,8 +28,7 @@ async def run_in_threadpool(func: Callable[..., T], *args: Any, **kwargs: Any) -
     loop = asyncio.get_event_loop()
     if contextvars is not None:
         child = functools.partial(func, *args, **kwargs)
-        context = contextvars.copy_context()
-        func = context.run
+        func = contextvars.copy_context().run
         args = (child,)
     elif kwargs:
         func = functools.partial(func, **kwargs)

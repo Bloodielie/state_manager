@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union, List, Set
 
 from aiogram import Dispatcher
 
@@ -37,8 +37,12 @@ class AiogramRouter(BaseRouter):
 
 
 class AiogramMainRouter(AiogramRouter, BaseMainRouter):
-    def __init__(self, dispatcher: Optional[Dispatcher] = None) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        dispatcher: Optional[Dispatcher] = None,
+        routers: Optional[Union[List[BaseRouter], Set[BaseRouter]]] = None,
+    ) -> None:
+        super().__init__(routers=routers)
         self.dispatcher = dispatcher or Dispatcher.get_current()
 
     def install(

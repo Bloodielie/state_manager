@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Callable, Optional, Any
+from typing import Callable, Optional, Any, Union, List, Set
 
 from vkwave.bots import SimpleLongPollBot, BotEvent, EventTypeFilter
 from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
@@ -26,8 +26,10 @@ class VkWaveRouter(BaseRouter):
 
 
 class VkWaveMainRouter(VkWaveRouter, BaseMainRouter):
-    def __init__(self, bot: Optional[SimpleLongPollBot]) -> None:
-        super().__init__()
+    def __init__(
+        self, bot: Optional[SimpleLongPollBot], routers: Optional[Union[List[BaseRouter], Set[BaseRouter]]] = None
+    ) -> None:
+        super().__init__(routers=routers)
         self.bot = bot
 
     def install(

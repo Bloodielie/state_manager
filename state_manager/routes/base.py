@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from logging import getLogger
-from typing import Callable, Optional, Set, Tuple, Union
+from typing import Callable, Optional, Set, Tuple, Union, List
 
 from state_manager.models.state import StateModel
 from state_manager.storage.base import BaseStorage
@@ -10,9 +10,11 @@ logger = getLogger(__name__)
 
 
 class BaseRouter(ABC):
-    def __init__(self) -> None:
+    def __init__(self, routers: Optional[Union[List["BaseRouter"], Set["BaseRouter"]]] = None) -> None:
         self.state_storage = StateStorage()
-        self.routers: Set["BaseRouter"] = set()
+        if isinstance(routers, list) or isinstance(routers, tuple):
+            routers = set(routers)
+        self.routers: Set["BaseRouter"] = routers or set()
 
     def registration_state_handler(
         self,
