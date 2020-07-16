@@ -1,5 +1,6 @@
 import pytest
 
+from state_manager import BaseStorage
 from state_manager.models.state import StateData
 from state_manager.storage_settings import StorageSettings
 from state_manager.storages.memory import MemoryStorage
@@ -32,7 +33,7 @@ async def test_memory_storage(state_data):
 
 
 @pytest.mark.asyncio
-async def test_memory_storage(state_data):
+async def test_redis_storage(state_data):
     storage = RedisStorage(StorageSettings())
     assert await storage.get("test") is None
     assert await storage.get("test", state_data) == state_data
@@ -46,3 +47,9 @@ async def test_memory_storage(state_data):
     assert await storage.get("test") is None
     assert await storage.close() is None
     assert await storage.wait_closed() is None
+
+
+@pytest.mark.asyncio
+async def test_base_storage(state_data):
+    with pytest.raises(TypeError) as err:
+        storage = BaseStorage()
