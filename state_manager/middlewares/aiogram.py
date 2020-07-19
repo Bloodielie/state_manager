@@ -27,28 +27,29 @@ class AiogramStateMiddleware(BaseMiddleware):
         super().__init__()
 
     async def on_post_process_message(self, message: types.Message, _, data: dict) -> None:
-        if data:
+        if data.get("state") or data.get("raw_state") or data.get("command"):
             return
-        handler_result = await self.post_process_handlers(message, "message")
+        handler_result = await self.post_process_handlers(message, "message", data)
         if handler_result is not None and isinstance(handler_result, str):
             await message.answer(handler_result)
 
     async def on_post_process_callback_query(self, callback_query: types.CallbackQuery, _, data: dict) -> None:
-        if data:
+        if data.get("state") or data.get("raw_state") or data.get("command"):
             return
-        await self.post_process_handlers(callback_query, "callback_query")
+        await self.post_process_handlers(callback_query, "callback_query", data)
 
     async def on_post_process_edited_message(self, callback_query: types.CallbackQuery, _, data: dict) -> None:
-        if data:
+        if data.get("state") or data.get("raw_state") or data.get("command"):
             return
-        await self.post_process_handlers(callback_query, "edited_message")
+        await self.post_process_handlers(callback_query, "edited_message", data)
 
-    async def post_process_handlers(self, ctx: Context, event_type: str) -> None:
+    async def post_process_handlers(self, ctx: Context, event_type: str, data: Optional[dict] = None) -> None:
         dependency_storage = dependency_storage_factory(
             bot=self._main_router.dispatcher.bot,
             dispatcher=self._main_router.dispatcher,
             context=ctx,
             storage=self._storage,
+            data=data
         )
         state_name = await self._get_user_state_name(ctx)
         return await self._handler_finder.get_handler_and_run(dependency_storage, state_name, event_type)

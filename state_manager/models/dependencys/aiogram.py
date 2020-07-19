@@ -35,6 +35,7 @@ class AiogramDependencyStorage(BaseDependencyStorage):
     bot: Bot
     dispatcher: Dispatcher
     context: TelegramObject
+    data: Optional[dict] = None
 
     class Config:
         arbitrary_types_allowed = True

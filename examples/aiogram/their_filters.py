@@ -2,8 +2,9 @@ import logging
 
 from aiogram import Bot, Dispatcher, executor, types
 
-from state_manager import AiogramStateManager, MemoryStorage
+from state_manager import MemoryStorage
 from state_manager.filters.base import BaseFilter
+from state_manager.models.dependencys.aiogram import AiogramStateManager
 from state_manager.routes.aiogram import AiogramMainRouter
 
 logging.basicConfig(level=logging.INFO)

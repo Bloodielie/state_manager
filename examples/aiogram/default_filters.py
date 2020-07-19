@@ -2,7 +2,8 @@ import logging
 
 from aiogram import Bot, Dispatcher, executor, types
 
-from state_manager import AiogramStateManager, MemoryStorage
+from state_manager import MemoryStorage
+from state_manager.models.dependencys.aiogram import AiogramStateManager
 from state_manager.routes.aiogram import AiogramMainRouter
 from state_manager.filters.aiogram import text_filter, text_contains_filter, regex_filter
 

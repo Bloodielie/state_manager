@@ -4,7 +4,8 @@ from slave import state_router
 
 import logging
 
-from state_manager import VkWaveMainRouter, MemoryStorage
+from state_manager import MemoryStorage
+from state_manager.routes.vkwave import VkWaveMainRouter
 
 logging.basicConfig(level=logging.INFO)
 

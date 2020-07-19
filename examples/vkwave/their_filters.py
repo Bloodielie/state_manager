@@ -2,8 +2,10 @@ from vkwave.bots import SimpleLongPollBot
 
 import logging
 
-from state_manager import VkWaveMainRouter, VkWaveStateManager, MemoryStorage
+from state_manager import MemoryStorage
 from state_manager.filters.base import BaseFilter
+from state_manager.models.dependencys.vkwave import VkWaveStateManager
+from state_manager.routes.vkwave import VkWaveMainRouter
 
 logging.basicConfig(level=logging.INFO)
 
