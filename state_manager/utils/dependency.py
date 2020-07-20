@@ -4,10 +4,9 @@ from typing import Callable, Dict, Any, TypeVar
 
 from pydantic.typing import ForwardRef, evaluate_forwardref
 
-from state_manager.models.dependencys.aiogram import AiogramDependencyStorage, AiogramStateManager
 from state_manager.models.dependencys.base import Depends, BaseDependencyStorage
-from state_manager.models.dependencys.vkwave import VkWaveDependencyStorage, VkWaveStateManager
 from state_manager.utils.check import check_function_and_run
+from importlib import import_module
 
 logger = getLogger(__name__)
 
@@ -58,12 +57,14 @@ async def get_func_attributes(function: Callable[..., T], dependency_storage: Ba
 
 def dependency_storage_factory(*, lib: str = "aiogram", **kwargs) -> BaseDependencyStorage:
     if lib == "aiogram":
-        kwargs["state_manager"] = AiogramStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
+        aiogram = import_module("state_manager.models.dependencys.aiogram")
+        kwargs["state_manager"] = aiogram.AiogramStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
         logger.debug(f"Create AiogramDependencyStorage, {kwargs=}")
-        return AiogramDependencyStorage(**kwargs)
+        return aiogram.AiogramDependencyStorage(**kwargs)
     elif lib == "vkwave":
-        kwargs["state_manager"] = VkWaveStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
+        vkwave = import_module("state_manager.models.dependencys.vkwave")
+        kwargs["state_manager"] = vkwave.VkWaveStateManager(storage=kwargs.get("storage"), context=kwargs.get("context"))
         logger.debug(f"Create VkWaveDependencyStorage, {kwargs=}")
-        return VkWaveDependencyStorage(**kwargs)
+        return vkwave.VkWaveDependencyStorage(**kwargs)
     else:
         raise ValueError("library not found")
