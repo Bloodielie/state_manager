@@ -38,10 +38,8 @@ class HandlerFinder:
             filter_result = await self._run_filter(filter, dependency_storage)
             if handler is not None and filter is not None and filter_result:
                 return handler
-            elif handler is not None and not filter:
-                return None
-
-        return await self._get_state_handler(dependency_storage, state_name, event_type)
+        else:
+            return await self._get_state_handler(dependency_storage, state_name, event_type)
 
     async def _get_state_handler(
         self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
