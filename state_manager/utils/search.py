@@ -30,10 +30,9 @@ class HandlerFinder:
             logger.debug(f"Get state handler in cache, {state_name=}, {event_type=}, {dependency_storage=}")
             handler, filter = self._handler_in_cache.get((state_name, event_type), (None, None))
             if handler is not None and filter is not None and await self._run_filter(filter, dependency_storage):
-                if filter is None:
-                    return handler
-                if await self._run_filter(filter, dependency_storage):
-                    return handler
+                return handler
+            elif handler is not None and filter is None:
+                return handler
 
         handler = await self._get_state_handler(dependency_storage, state_name, event_type)
         return handler
