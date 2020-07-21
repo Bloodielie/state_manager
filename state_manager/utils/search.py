@@ -19,9 +19,11 @@ class HandlerFinder:
         self._handler_in_cache: Dict[Tuple[str, str], Tuple[Callable, Callable]] = {}
 
     async def get_handler_and_run(self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str):
-        if handler := await self.get_state_handler(dependency_storage, state_name, event_type):
-            func_attr = await get_func_attributes(handler, dependency_storage)
-            return await check_function_and_run(handler, **func_attr)
+        handler = await self.get_state_handler(dependency_storage, state_name, event_type)
+        if handler is None:
+            return None
+        func_attr = await get_func_attributes(handler, dependency_storage)
+        return await check_function_and_run(handler, **func_attr)
 
     async def get_state_handler(
         self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
@@ -29,13 +31,17 @@ class HandlerFinder:
         if self._is_cache:
             logger.debug(f"Get state handler in cache, {state_name=}, {event_type=}, {dependency_storage=}")
             handler, filter = self._handler_in_cache.get((state_name, event_type), (None, None))
-            if handler is not None and filter is not None and await self._run_filter(filter, dependency_storage):
+            if handler is not None and filter is None:
                 return handler
-            elif handler is not None and filter is None:
+            elif handler is None and filter is None:
+                return await self._get_state_handler(dependency_storage, state_name, event_type)
+            filter_result = await self._run_filter(filter, dependency_storage)
+            if handler is not None and filter is not None and filter_result:
                 return handler
+            elif handler is not None and not filter:
+                return None
 
-        handler = await self._get_state_handler(dependency_storage, state_name, event_type)
-        return handler
+        return await self._get_state_handler(dependency_storage, state_name, event_type)
 
     async def _get_state_handler(
         self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
