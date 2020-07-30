@@ -2,11 +2,6 @@ from typing import Callable, Optional, Any
 
 from pydantic import BaseModel
 
-try:
-    import ujson as json
-except ImportError:
-    import json  # type: ignore
-
 
 class StateModel(BaseModel):
     name: str
@@ -25,7 +20,3 @@ class StateData(BaseModel):
     pre_state: Optional[str]
     current_state: str
     data: Optional[Any]
-
-    class Config:
-        json_loads = json.loads
-        json_dumps = json.dumps

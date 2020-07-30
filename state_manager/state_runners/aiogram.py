@@ -1,27 +1,30 @@
 from typing import Optional
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher.middlewares import BaseMiddleware
 
+from state_manager.models.routers_storage import RouterStorage
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
 from state_manager.types import Context
 from state_manager.utils.dependency import dependency_storage_factory
 from state_manager.utils.search import HandlerFinder
-from state_manager.utils.utils import get_user_state_name
+from state_manager.utils.utils import get_state_name
 
 
 class AiogramStateMiddleware(BaseMiddleware):
     def __init__(
         self,
-        main_router: "AiogramMainRouter",
+        router_storage: RouterStorage,
+        dispatcher: Dispatcher,
         storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True,
     ) -> None:
-        self._main_router = main_router
-        self._handler_finder = HandlerFinder(main_router, is_cached)
+        self.dispatcher = dispatcher
+        self.router_storage = router_storage
+        self._handler_finder = HandlerFinder(router_storage, is_cached)
         self._storage = storage or redis.RedisStorage(StorageSettings())
         self._default_state_name = default_state_name or "home"
         super().__init__()
@@ -45,8 +48,8 @@ class AiogramStateMiddleware(BaseMiddleware):
 
     async def post_process_handlers(self, ctx: Context, event_type: str, data: Optional[dict] = None) -> None:
         dependency_storage = dependency_storage_factory(
-            bot=self._main_router.dispatcher.bot,
-            dispatcher=self._main_router.dispatcher,
+            bot=self.dispatcher.bot,
+            dispatcher=self.dispatcher,
             context=ctx,
             storage=self._storage,
             data=data
@@ -56,4 +59,4 @@ class AiogramStateMiddleware(BaseMiddleware):
 
     async def _get_user_state_name(self, ctx: Context) -> str:
         user_id = ctx.from_user.id
-        return await get_user_state_name(user_id, self._storage, self._default_state_name)
+        return await get_state_name(user_id, self._storage, self._default_state_name)

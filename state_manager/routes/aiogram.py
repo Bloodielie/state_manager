@@ -3,7 +3,7 @@ from typing import Callable, Optional, Tuple, Union, List, Set
 
 from aiogram import Dispatcher
 
-from state_manager.middlewares.aiogram import AiogramStateMiddleware
+from state_manager.state_runners.aiogram import AiogramStateMiddleware
 from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storages.base import BaseStorage
 
@@ -54,4 +54,4 @@ class AiogramMainRouter(AiogramRouter, BaseMainRouter):
     ) -> None:
         logger.info(f"Install AiogramMainRouter")
         logger.debug(f"install, {storage=}, {default_state_name=}, {is_cached=}")
-        self.dispatcher.middleware.setup(AiogramStateMiddleware(self, storage, default_state_name, is_cached))
+        self.dispatcher.middleware.setup(AiogramStateMiddleware(self.storage, self.dispatcher, storage, default_state_name, is_cached))

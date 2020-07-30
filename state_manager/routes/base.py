@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Callable, Optional, Set, Tuple, Union, List
 
+from state_manager.models.routers_storage import RouterStorage
 from state_manager.models.state import StateModel
 from state_manager.storages.base import BaseStorage
 from state_manager.storages.state_storage import StateStorage
@@ -11,10 +12,11 @@ logger = getLogger(__name__)
 
 class BaseRouter(ABC):
     def __init__(self, routers: Optional[Union[List["BaseRouter"], Set["BaseRouter"]]] = None) -> None:
-        self.state_storage = StateStorage()
         if isinstance(routers, list) or isinstance(routers, tuple):
             routers = set(routers)
-        self.routers: Set["BaseRouter"] = routers or set()
+        else:
+            routers = set()
+        self.storage = RouterStorage[BaseRouter](state_storage=StateStorage(), routers=routers)
 
     def registration_state_handler(
         self,
@@ -34,11 +36,11 @@ class BaseRouter(ABC):
         for state_name in state_names:
             state_name = state_name or handler.__name__
             state = StateModel(name=state_name, event_type=event_type, handler=handler, filters=filters)
-            self.state_storage.add_state(state)
+            self.storage.state_storage.add_state(state)
 
     def include_router(self, router: "BaseRouter") -> None:
         logger.debug(f"include_router, {router=}")
-        self.routers.add(router)
+        self.storage.routers.add(router)
 
 
 class BaseMainRouter(BaseRouter):

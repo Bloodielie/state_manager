@@ -4,6 +4,7 @@ from typing import Callable, Optional, Set, Dict, Tuple, Any, Union
 
 from state_manager.filters.base import BaseFilter
 from state_manager.models.dependencys.base import BaseDependencyStorage
+from state_manager.models.routers_storage import RouterStorage
 from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storages.state_storage import StateStorage
 from state_manager.utils.check import check_function_and_run
@@ -13,8 +14,8 @@ logger = getLogger(__name__)
 
 
 class HandlerFinder:
-    def __init__(self, main_router: BaseMainRouter, is_cache: bool = False) -> None:
-        self._main_router = main_router
+    def __init__(self, router_storage: RouterStorage, is_cache: bool = False) -> None:
+        self.router_storage = router_storage
         self._is_cache = is_cache
         self._handler_in_cache: Dict[Tuple[str, str], Tuple[Callable, Callable]] = {}
 
@@ -45,9 +46,9 @@ class HandlerFinder:
         self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
     ) -> Optional[Callable]:
         handler_search = partial(self._handler_search, dependency_storage, event_type, state_name)
-        if handler := await handler_search(self._main_router.state_storage):
+        if handler := await handler_search(self.router_storage.state_storage):
             return handler
-        if handler := await self._search_handler_in_routes(self._main_router.routers, handler_search):
+        if handler := await self._search_handler_in_routes(self.router_storage.routers, handler_search):
             return handler
 
     async def _handler_search(
@@ -72,9 +73,9 @@ class HandlerFinder:
         if not isinstance(routes, set):
             return None
         for router in routes:
-            if handler := await search_func(router.state_storage):
+            if handler := await search_func(router.storage.state_storage):
                 return handler
-            if handler := await cls._search_handler_in_routes(router.routers, search_func):
+            if handler := await cls._search_handler_in_routes(router.storage.routers, search_func):
                 return handler
 
     async def _run_filter(self, filter: Union[Callable, BaseFilter], dependency_storage: BaseDependencyStorage) -> bool:
