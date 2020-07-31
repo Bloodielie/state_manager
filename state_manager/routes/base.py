@@ -41,7 +41,7 @@ class BaseRouter(ABC):
 
     def include_router(self, router: "BaseRouter") -> None:
         logger.debug(f"include_router, {router=}")
-        self.storage.routers.bind(router)
+        self.storage.routers.add(router)
 
 
 class BaseMainRouter(BaseRouter):
