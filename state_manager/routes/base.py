@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Callable, Optional, Set, Tuple, Union, List
 
+from state_manager.dependency.container import ExternalDependenciesContainer
 from state_manager.models.routers_storage import RouterStorage
 from state_manager.models.state import StateModel
 from state_manager.storages.base import BaseStorage
@@ -40,10 +41,14 @@ class BaseRouter(ABC):
 
     def include_router(self, router: "BaseRouter") -> None:
         logger.debug(f"include_router, {router=}")
-        self.storage.routers.add(router)
+        self.storage.routers.bind(router)
 
 
 class BaseMainRouter(BaseRouter):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.external_dependencies = ExternalDependenciesContainer()
+
     @abstractmethod
     def install(
         self,

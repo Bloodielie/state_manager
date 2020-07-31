@@ -29,8 +29,11 @@ def get_typed_signature(call: Callable) -> inspect.Signature:
 def get_typed_annotation(param: inspect.Parameter, globalns: Dict[str, Any]) -> Any:
     annotation = param.annotation
     if isinstance(annotation, str):
-        annotation = ForwardRef(annotation)  # type: ignore
-        annotation = evaluate_forwardref(annotation, globalns, globalns)
+        try:
+            annotation = ForwardRef(annotation)  # type: ignore
+            annotation = evaluate_forwardref(annotation, globalns, globalns)
+        except TypeError:
+            annotation = param.annotation
     return annotation
 
 
@@ -45,10 +48,14 @@ async def get_func_attributes(function: Callable[..., T], dependency_storage: Ba
             func_arg[attr_name] = await check_function_and_run(dependency, **attr)
             continue
 
-        for dependency in dependency_storage.fields.values():
-            if not issubclass(parameter.annotation, dependency.type_):
-                continue
-            func_arg[attr_name] = getattr(dependency_storage, dependency.name, None)
+        for dependency in dependency_storage:
+            try:
+                if not issubclass(parameter.annotation, dependency.type_):
+                    continue
+            except TypeError:
+                if parameter.annotation != dependency.type_:
+                    continue
+            func_arg[attr_name] = dependency.implementation
 
         if not func_arg:
             func_arg[attr_name] = dependency_storage.context  # type: ignore

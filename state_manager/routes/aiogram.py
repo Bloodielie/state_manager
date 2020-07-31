@@ -54,4 +54,4 @@ class AiogramMainRouter(AiogramRouter, BaseMainRouter):
     ) -> None:
         logger.info(f"Install AiogramMainRouter")
         logger.debug(f"install, {storage=}, {default_state_name=}, {is_cached=}")
-        self.dispatcher.middleware.setup(AiogramStateMiddleware(self.storage, self.dispatcher, storage, default_state_name, is_cached))
+        self.dispatcher.middleware.setup(AiogramStateMiddleware(self.external_dependencies, self.storage, self.dispatcher, storage, default_state_name, is_cached))

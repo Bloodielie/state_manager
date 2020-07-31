@@ -9,7 +9,7 @@ from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
-from state_manager.utils.dependency import dependency_storage_factory
+from state_manager.dependency.dependency import dependency_storage_factory
 from state_manager.utils.search import HandlerFinder
 from state_manager.utils.utils import get_state_name
 

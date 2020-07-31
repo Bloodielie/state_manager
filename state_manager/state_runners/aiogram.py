@@ -8,7 +8,7 @@ from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
 from state_manager.types import Context
-from state_manager.utils.dependency import dependency_storage_factory
+from state_manager.dependency.dependency import dependency_storage_factory
 from state_manager.utils.search import HandlerFinder
 from state_manager.utils.utils import get_state_name
 
@@ -16,12 +16,14 @@ from state_manager.utils.utils import get_state_name
 class AiogramStateMiddleware(BaseMiddleware):
     def __init__(
         self,
+        external_dependencies,
         router_storage: RouterStorage,
         dispatcher: Dispatcher,
         storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True,
     ) -> None:
+        self.external_dependencies = external_dependencies
         self.dispatcher = dispatcher
         self.router_storage = router_storage
         self._handler_finder = HandlerFinder(router_storage, is_cached)
@@ -52,7 +54,8 @@ class AiogramStateMiddleware(BaseMiddleware):
             dispatcher=self.dispatcher,
             context=ctx,
             storage=self._storage,
-            data=data
+            data=data,
+            external_dependencies=self.external_dependencies
         )
         state_name = await self._get_user_state_name(ctx)
         return await self._handler_finder.get_handler_and_run(dependency_storage, state_name, event_type)
