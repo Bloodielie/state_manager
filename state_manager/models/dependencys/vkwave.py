@@ -3,7 +3,7 @@ from typing import Optional
 
 from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent, BaseSimpleLongPollBot
 
-from state_manager.models.dependencys.base import BaseDependencyStorage, BaseStateManager, back_to_pre_state_
+from state_manager.models.dependencys.base import BaseStateManager, back_to_pre_state_
 from state_manager.models.state import StateData
 from state_manager.types import Data
 
@@ -26,14 +26,6 @@ class VkWaveStateManager(BaseStateManager):
     async def _get_state_data(self) -> Optional[StateData]:
         logger.debug(f"get_storage")
         return await self.storage.get(str(self.context.object.object.message.from_id))
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class VkWaveDependencyStorage(BaseDependencyStorage):
-    bot: BaseSimpleLongPollBot
-    context: SimpleBotEvent
 
     class Config:
         arbitrary_types_allowed = True

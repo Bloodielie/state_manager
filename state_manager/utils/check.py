@@ -1,9 +1,7 @@
-import asyncio
-import functools
 import inspect
 from typing import Callable, Any, TypeVar
 
-import contextvars
+from state_manager.utils.utils import run_in_threadpool
 
 T = TypeVar("T")
 
@@ -24,12 +22,5 @@ async def check_function_and_run(func: Callable[..., T], *args: Any, **kwargs: A
         return await run_in_threadpool(func, *args, **kwargs)
 
 
-async def run_in_threadpool(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-    loop = asyncio.get_event_loop()
-    if contextvars is not None:
-        child = functools.partial(func, *args, **kwargs)
-        func = contextvars.copy_context().run
-        args = (child,)
-    elif kwargs:
-        func = functools.partial(func, **kwargs)
-    return await loop.run_in_executor(None, func, *args)
+def is_factory(obj) -> bool:
+    return getattr(obj, "is_factory", False)

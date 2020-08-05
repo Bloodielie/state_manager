@@ -1,14 +1,17 @@
 from typing import Optional
 
-from aiogram import types, Dispatcher
+from aiogram import types
 from aiogram.dispatcher.middlewares import BaseMiddleware
+from aiogram.types.base import TelegramObject
 
+from state_manager import BaseStateManager
+from state_manager.dependency.container import AppContainer, ContainerWrapper
+from state_manager.models.dependencys.aiogram import AiogramStateManager
 from state_manager.models.routers_storage import RouterStorage
+from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
-from state_manager.storage_settings import StorageSettings
 from state_manager.types import Context
-from state_manager.dependency.dependency import dependency_storage_factory
 from state_manager.utils.search import HandlerFinder
 from state_manager.utils.utils import get_state_name
 
@@ -16,16 +19,11 @@ from state_manager.utils.utils import get_state_name
 class AiogramStateMiddleware(BaseMiddleware):
     def __init__(
         self,
-        external_dependencies,
         router_storage: RouterStorage,
-        dispatcher: Dispatcher,
         storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True,
     ) -> None:
-        self.external_dependencies = external_dependencies
-        self.dispatcher = dispatcher
-        self.router_storage = router_storage
         self._handler_finder = HandlerFinder(router_storage, is_cached)
         self._storage = storage or redis.RedisStorage(StorageSettings())
         self._default_state_name = default_state_name or "home"
@@ -49,16 +47,16 @@ class AiogramStateMiddleware(BaseMiddleware):
         await self.post_process_handlers(callback_query, "edited_message", data)
 
     async def post_process_handlers(self, ctx: Context, event_type: str, data: Optional[dict] = None) -> None:
-        dependency_storage = dependency_storage_factory(
-            bot=self.dispatcher.bot,
-            dispatcher=self.dispatcher,
-            context=ctx,
-            storage=self._storage,
-            data=data,
-            external_dependencies=self.external_dependencies
+        container = AppContainer.get_current()
+        dependency_container = ContainerWrapper(container)
+        dependency_container.add_dependency(TelegramObject, ctx)
+        dependency_container.add_dependency(dict, data)
+        dependency_container.add_dependency(
+            BaseStateManager, AiogramStateManager(storage=container.get(BaseStorage).implementation, context=ctx)
         )
+
         state_name = await self._get_user_state_name(ctx)
-        return await self._handler_finder.get_handler_and_run(dependency_storage, state_name, event_type)
+        return await self._handler_finder.get_handler_and_run(dependency_container, state_name, event_type)
 
     async def _get_user_state_name(self, ctx: Context) -> str:
         user_id = ctx.from_user.id

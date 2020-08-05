@@ -1,10 +1,7 @@
 from logging import getLogger
 from typing import Optional
 
-from aiogram import Bot, Dispatcher
-from aiogram.types.base import TelegramObject
-
-from state_manager.models.dependencys.base import BaseDependencyStorage, back_to_pre_state_, BaseStateManager
+from state_manager.models.dependencys.base import back_to_pre_state_, BaseStateManager
 from state_manager.models.state import StateData
 from state_manager.types import Context, Data
 
@@ -26,16 +23,6 @@ class AiogramStateManager(BaseStateManager):
     async def _get_state_data(self) -> Optional[StateData]:
         logger.debug(f"get_storage")
         return await self.storage.get(self.context.from_user.id)
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class AiogramDependencyStorage(BaseDependencyStorage):
-    bot: Bot
-    dispatcher: Dispatcher
-    context: TelegramObject
-    data: Optional[dict] = None
 
     class Config:
         arbitrary_types_allowed = True

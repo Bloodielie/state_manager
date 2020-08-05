@@ -2,13 +2,13 @@ from functools import partial
 from logging import getLogger
 from typing import Callable, Optional, Set, Dict, Tuple, Any, Union
 
+from state_manager.dependency.container import ContainerWrapper
+from state_manager.dependency.dependency import get_func_attributes
 from state_manager.filters.base import BaseFilter
-from state_manager.models.dependencys.base import BaseDependencyStorage
 from state_manager.models.routers_storage import RouterStorage
 from state_manager.routes.base import BaseRouter
 from state_manager.storages.state_storage import StateStorage
 from state_manager.utils.check import check_function_and_run
-from state_manager.dependency.dependency import get_func_attributes
 
 logger = getLogger(__name__)
 
@@ -19,7 +19,7 @@ class HandlerFinder:
         self._is_cache = is_cache
         self._handler_in_cache: Dict[Tuple[str, str], Tuple[Callable, Callable]] = {}
 
-    async def get_handler_and_run(self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str):
+    async def get_handler_and_run(self, dependency_storage: ContainerWrapper, state_name: str, event_type: str):
         handler = await self.get_state_handler(dependency_storage, state_name, event_type)
         if handler is None:
             return None
@@ -27,7 +27,7 @@ class HandlerFinder:
         return await check_function_and_run(handler, **func_attr)
 
     async def get_state_handler(
-        self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
+        self, dependency_storage: ContainerWrapper, state_name: str, event_type: str
     ) -> Optional[Callable]:
         if self._is_cache:
             logger.debug(f"Get state handler in cache, {state_name=}, {event_type=}, {dependency_storage=}")
@@ -43,7 +43,7 @@ class HandlerFinder:
             return await self._get_state_handler(dependency_storage, state_name, event_type)
 
     async def _get_state_handler(
-        self, dependency_storage: BaseDependencyStorage, state_name: str, event_type: str
+        self, dependency_storage: ContainerWrapper, state_name: str, event_type: str
     ) -> Optional[Callable]:
         handler_search = partial(self._handler_search, dependency_storage, event_type, state_name)
         if handler := await handler_search(self.router_storage.state_storage):
@@ -52,7 +52,7 @@ class HandlerFinder:
             return handler
 
     async def _handler_search(
-        self, dependency_storage: BaseDependencyStorage, event_type: str, state_name: str, state_storage: StateStorage
+        self, dependency_storage: ContainerWrapper, event_type: str, state_name: str, state_storage: StateStorage
     ) -> Optional[Callable]:
         states = state_storage.get_state(event_type, state_name)
         if states is None:
@@ -78,7 +78,7 @@ class HandlerFinder:
             if handler := await cls._search_handler_in_routes(router.storage.routers, search_func):
                 return handler
 
-    async def _run_filter(self, filter: Union[Callable, BaseFilter], dependency_storage: BaseDependencyStorage) -> bool:
+    async def _run_filter(self, filter: Union[Callable, BaseFilter], dependency_storage: ContainerWrapper) -> bool:
         if isinstance(filter, BaseFilter):
             filter_attr = await get_func_attributes(filter.check, dependency_storage)
             result = await check_function_and_run(filter.check, **filter_attr)

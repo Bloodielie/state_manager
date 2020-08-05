@@ -3,7 +3,6 @@ from typing import Callable, Optional, Iterator
 
 from pydantic import BaseModel
 
-from state_manager.dependency.container import ExternalDependenciesContainer
 from state_manager.dependency.models import DependencyWrapper
 from state_manager.models.state import StateData
 from state_manager.storages.base import BaseStorage
@@ -50,21 +49,6 @@ class BaseStateManager(BaseModel):
     @abstractmethod
     async def _get_state_data(self) -> Optional[StateData]:
         pass
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
-class BaseDependencyStorage(BaseModel):
-    storage: BaseStorage
-    state_manager: Optional[BaseStateManager] = None
-    external_dependencies: ExternalDependenciesContainer = ExternalDependenciesContainer()
-
-    def __iter__(self) -> Iterator[DependencyWrapper]:
-        for dependency in self.fields.values():
-            yield DependencyWrapper(type_=dependency.type_, implementation=getattr(self, dependency.name, None))
-        for dependency in self.external_dependencies:
-            yield dependency
 
     class Config:
         arbitrary_types_allowed = True

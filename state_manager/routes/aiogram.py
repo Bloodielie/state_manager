@@ -1,10 +1,12 @@
 from logging import getLogger
 from typing import Callable, Optional, Tuple, Union, List, Set
 
-from aiogram import Dispatcher
+from aiogram import Dispatcher, Bot
 
-from state_manager.state_runners.aiogram import AiogramStateMiddleware
 from state_manager.routes.base import BaseRouter, BaseMainRouter
+from state_manager.state_runners.aiogram import AiogramStateMiddleware
+from state_manager.storage_settings import StorageSettings
+from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 
 logger = getLogger(__name__)
@@ -46,12 +48,13 @@ class AiogramMainRouter(AiogramRouter, BaseMainRouter):
         self.dispatcher = dispatcher or Dispatcher.get_current()
 
     def install(
-        self,
-        *,
-        storage: Optional[BaseStorage] = None,
-        default_state_name: Optional[str] = None,
-        is_cached: bool = True,
+        self, *, storage: Optional[BaseStorage] = None, default_state_name: Optional[str] = None, is_cached: bool = True
     ) -> None:
+        storage = storage or redis.RedisStorage(StorageSettings())
+        self.container.bind_constant(BaseStorage, storage)
+        self.container.bind_constant(Dispatcher, self.dispatcher)
+        self.container.bind_constant(Bot, self.dispatcher.bot)
+
         logger.info(f"Install AiogramMainRouter")
         logger.debug(f"install, {storage=}, {default_state_name=}, {is_cached=}")
-        self.dispatcher.middleware.setup(AiogramStateMiddleware(self.external_dependencies, self.storage, self.dispatcher, storage, default_state_name, is_cached))
+        self.dispatcher.middleware.setup(AiogramStateMiddleware(self.storage, storage, default_state_name, is_cached))
