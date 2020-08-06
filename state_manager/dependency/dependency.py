@@ -71,16 +71,12 @@ async def search_attributes(dependency_storage: ContainerWrapper, signatures: in
                 func_arg[attr_name] = await check_function_and_run(dependency.implementation, **attr)
             elif dependency.is_constant:
                 func_arg[attr_name] = dependency.implementation
+            elif signature := get_signature_to_implementation(dependency.implementation):
+                attr = await search_attributes(dependency_storage, signature)
+                func_arg[attr_name] = await check_function_and_run(dependency.implementation, **attr)
             else:
-                signature = get_signature_to_implementation(dependency.implementation)
-                if signature is None:
-                    func_arg[attr_name] = dependency.implementation
-                else:
-                    attr = await search_attributes(dependency_storage, signature)
-                    func_arg[attr_name] = await check_function_and_run(dependency.implementation, **attr)
+                func_arg[attr_name] = dependency.implementation
 
-        if not func_arg:
-            func_arg[attr_name] = dependency_storage.container.get(TelegramObject)
     return func_arg
 
 
