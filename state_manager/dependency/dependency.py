@@ -21,7 +21,8 @@ def get_typed_signature(call: Callable) -> inspect.Signature:
         inspect.Parameter(
             name=param.name, kind=param.kind, default=param.default, annotation=get_typed_annotation(param, globalns),
         )
-        for param in signature.parameters.values() if param.name != "self"
+        for param in signature.parameters.values()
+        if param.name != "self"
     ]
     typed_signature = inspect.Signature(typed_params)
     return typed_signature
@@ -43,7 +44,7 @@ def get_signature_to_implementation(implementation: Any) -> Optional[inspect.Sig
         return get_typed_signature(implementation.__init__)
     elif inspect.isfunction(implementation) or inspect.ismethod(implementation):
         return get_typed_signature(implementation)
-    elif hasattr(implementation, '__call__'):
+    elif hasattr(implementation, "__call__"):
         return get_typed_signature(implementation.__call__)
 
 
@@ -52,9 +53,9 @@ async def search_attributes(dependency_storage: ContainerWrapper, signatures: in
     for attr_name, parameter in signatures.parameters.items():
         if isinstance(parameter.default, Depends):
             dep = parameter.default.dependency
-            dependency = dep if dep else parameter.annotation
-            attr = await get_func_attributes(dependency, dependency_storage)
-            func_arg[attr_name] = await check_function_and_run(dependency, **attr)
+            dependency_ = dep if dep else parameter.annotation
+            attr = await get_func_attributes(dependency_, dependency_storage)
+            func_arg[attr_name] = await check_function_and_run(dependency_, **attr)
             continue
 
         for dependency in dependency_storage:

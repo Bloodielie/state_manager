@@ -36,7 +36,7 @@ class HandlerFinder:
                 return handler
             elif handler is None and filter is None:
                 return await self._get_state_handler(dependency_storage, state_name, event_type)
-            filter_result = await self._run_filter(filter, dependency_storage)
+            filter_result = await self._run_filter(filter, dependency_storage)  # type: ignore
             if handler is not None and filter is not None and filter_result:
                 return handler
         else:
@@ -78,7 +78,9 @@ class HandlerFinder:
             if handler := await cls._search_handler_in_routes(router.storage.routers, search_func):
                 return handler
 
-    async def _run_filter(self, filter: Union[Callable, BaseFilter], dependency_storage: ContainerWrapper) -> bool:
+    async def _run_filter(
+        self, filter: Union[Callable[..., Any], BaseFilter], dependency_storage: ContainerWrapper
+    ) -> bool:
         if isinstance(filter, BaseFilter):
             filter_attr = await get_func_attributes(filter.check, dependency_storage)
             result = await check_function_and_run(filter.check, **filter_attr)

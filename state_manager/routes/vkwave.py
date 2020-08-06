@@ -29,7 +29,7 @@ class VkWaveRouter(BaseRouter):
 
 class VkWaveMainRouter(VkWaveRouter, BaseMainRouter):
     def __init__(
-        self, bot: Optional[SimpleLongPollBot], routers: Optional[Union[List[BaseRouter], Set[BaseRouter]]] = None
+        self, bot: SimpleLongPollBot, routers: Optional[Union[List[BaseRouter], Set[BaseRouter]]] = None
     ) -> None:
         super().__init__(routers=routers)
         self.bot = bot
@@ -61,9 +61,10 @@ class VkWaveMainRouter(VkWaveRouter, BaseMainRouter):
         container = AppContainer.get_current()
         dependency_container = ContainerWrapper(container)
         dependency_container.add_dependency(BaseEvent, simple_event)
-        dependency_container.add_dependency(
-            BaseStateManager, VkWaveStateManager(storage=container.get(BaseStorage).implementation, context=simple_event)
-        )
+        if storage_ := container.get(BaseStorage):
+            dependency_container.add_dependency(
+                BaseStateManager, VkWaveStateManager(storage=storage_.implementation, context=simple_event)
+            )
 
         state_name = await self._get_state_name(simple_event)
         handler_result = await self._handler_finder.get_handler_and_run(dependency_container, state_name, "message")

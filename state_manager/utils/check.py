@@ -17,7 +17,7 @@ def is_coroutine_callable(call: Callable) -> bool:
 
 async def check_function_and_run(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     if is_coroutine_callable(func):
-        return await func(*args, **kwargs)
+        return await func(*args, **kwargs)  # type: ignore
     else:
         return await run_in_threadpool(func, *args, **kwargs)
 
