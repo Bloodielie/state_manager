@@ -10,6 +10,7 @@ T = TypeVar("T")
 
 
 async def get_state_name(user_id: str, storage: BaseStorage, default: str) -> str:
+    """Get the name of the state in the storage."""
     user_state = await storage.get(user_id)
     if not user_state:
         user_state = StateData(current_state=default)
@@ -18,6 +19,7 @@ async def get_state_name(user_id: str, storage: BaseStorage, default: str) -> st
 
 
 async def run_in_threadpool(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+    """Runs a callable object in the threadpool and waits for it."""
     loop = asyncio.get_event_loop()
     if contextvars is not None:
         child = functools.partial(func, *args, **kwargs)

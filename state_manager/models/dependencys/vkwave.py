@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import Optional
 
-from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent, BaseSimpleLongPollBot
+from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
 
 from state_manager.models.dependencys.base import BaseStateManager, back_to_pre_state_
 from state_manager.models.state import StateData

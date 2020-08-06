@@ -32,13 +32,16 @@ class AppContainer(ContextInstanceMixin):
         self.set_current(self)
 
     def bind_constant(self, annotation: Any, implementation: Any) -> None:
+        """Bind an object that does not need to be initialized"""
         self.bind(annotation, implementation, is_constant=True)
 
     def bind_factory(self, annotation: Any, factory: Callable[..., Callable]) -> None:
+        """Bind a factory called before giving the object"""
         setattr(factory, "is_factory", True)
         self.bind(annotation, factory)
 
     def bind(self, annotation: Any, implementation: Any, is_constant: bool = False) -> None:
+        """Bind an object to be initialized"""
         self.dependencies[annotation] = DependencyWrapper(
             type_=annotation, implementation=implementation, is_constant=is_constant
         )

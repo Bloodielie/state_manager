@@ -2,7 +2,6 @@ import inspect
 from logging import getLogger
 from typing import Callable, Dict, Any, TypeVar, Optional
 
-from aiogram.types.base import TelegramObject
 from pydantic.typing import ForwardRef, evaluate_forwardref
 
 from state_manager.dependency.container import ContainerWrapper
@@ -15,6 +14,7 @@ T = TypeVar("T")
 
 
 def get_typed_signature(call: Callable) -> inspect.Signature:
+    """Get the signatures of the callable object"""
     signature = inspect.signature(call)
     globalns = getattr(call, "__globals__", {})
     typed_params = [
@@ -48,36 +48,46 @@ def get_signature_to_implementation(implementation: Any) -> Optional[inspect.Sig
         return get_typed_signature(implementation.__call__)
 
 
+async def search_attributes_in_dependency_container(
+        dependency_storage: ContainerWrapper, parameter: inspect.Parameter,
+) -> Optional[Any]:
+    for dependency in dependency_storage:
+        try:
+            if not issubclass(parameter.annotation, dependency.type_):
+                continue
+        except TypeError:
+            if parameter.annotation != dependency.type_:
+                continue
+
+        if is_factory(dependency.implementation):
+            attr = await get_func_attributes(dependency.implementation, dependency_storage)
+            return await check_function_and_run(dependency.implementation, **attr)
+        elif dependency.is_constant:
+            return dependency.implementation
+        else:
+            signature = get_signature_to_implementation(dependency.implementation)
+            if signature:
+                attr = await search_attributes(dependency_storage, signature)
+                return await check_function_and_run(dependency.implementation, **attr)
+            else:
+                return dependency.implementation
+
+
 async def search_attributes(dependency_storage: ContainerWrapper, signatures: inspect.Signature) -> Dict[str, Any]:
-    func_arg = {}
+    callable_object_arguments = {}
     for attr_name, parameter in signatures.parameters.items():
         if isinstance(parameter.default, Depends):
             dep = parameter.default.dependency
             dependency_ = dep if dep else parameter.annotation
             attr = await get_func_attributes(dependency_, dependency_storage)
-            func_arg[attr_name] = await check_function_and_run(dependency_, **attr)
+            callable_object_arguments[attr_name] = await check_function_and_run(dependency_, **attr)
             continue
 
-        for dependency in dependency_storage:
-            try:
-                if not issubclass(parameter.annotation, dependency.type_):
-                    continue
-            except TypeError:
-                if parameter.annotation != dependency.type_:
-                    continue
+        dependency = await search_attributes_in_dependency_container(dependency_storage, parameter)
+        if dependency is not None:
+            callable_object_arguments[attr_name] = dependency
 
-            if is_factory(dependency.implementation):
-                attr = await get_func_attributes(dependency.implementation, dependency_storage)
-                func_arg[attr_name] = await check_function_and_run(dependency.implementation, **attr)
-            elif dependency.is_constant:
-                func_arg[attr_name] = dependency.implementation
-            elif signature := get_signature_to_implementation(dependency.implementation):
-                attr = await search_attributes(dependency_storage, signature)
-                func_arg[attr_name] = await check_function_and_run(dependency.implementation, **attr)
-            else:
-                func_arg[attr_name] = dependency.implementation
-
-    return func_arg
+    return callable_object_arguments
 
 
 async def get_func_attributes(callable_: Callable[..., Any], dependency_storage: ContainerWrapper) -> Dict[str, Any]:
