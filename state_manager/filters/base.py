@@ -7,6 +7,7 @@ from state_manager.types import AnyText
 class BaseFilter(ABC):
     @abstractmethod
     async def check(self, *args, **kwargs) -> bool:  # type: ignore
+        """Method to check the filter result"""
         pass
 
     def __repr__(self) -> str:

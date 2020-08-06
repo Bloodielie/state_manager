@@ -4,7 +4,7 @@ from pydantic.generics import GenericModel
 
 from state_manager.storages.state_storage import StateStorage
 
-BaseRouters = TypeVar('BaseRouters')
+BaseRouters = TypeVar("BaseRouters")
 
 
 class RouterStorage(GenericModel, Generic[BaseRouters]):

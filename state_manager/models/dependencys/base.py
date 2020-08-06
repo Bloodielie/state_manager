@@ -53,14 +53,6 @@ class BaseStateManager(BaseModel):
         arbitrary_types_allowed = True
 
 
-class BaseDependencyStorage(BaseModel):
-    storage: BaseStorage
-    state_manager: Optional[BaseStateManager] = None
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
 async def back_to_pre_state_(storage: BaseStorage, user_id: str, data: Data) -> None:
     state = await storage.get(user_id)
     if state is None:

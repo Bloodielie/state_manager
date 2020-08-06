@@ -1,6 +1,6 @@
 import inspect
 
-from state_manager.utils.dependency import get_typed_signature
+from state_manager.dependency.dependency import get_typed_signature
 
 
 def func_test(a: str, b: str):

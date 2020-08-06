@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Callable, Optional, Set, Tuple, Union, List
 
+from state_manager.dependency.container import AppContainer
 from state_manager.models.routers_storage import RouterStorage
 from state_manager.models.state import StateModel
 from state_manager.storages.base import BaseStorage
@@ -23,7 +24,7 @@ class BaseRouter(ABC):
         event_type: str,
         handler: Callable,
         *,
-        state_name: Optional[Union[str, list, tuple]] = None,
+        state_name: Optional[Union[str, List[Optional[str]]]] = None,
         filters: Optional[Tuple[Callable[..., bool], ...]] = None,
     ) -> None:
         if isinstance(state_name, str) or state_name is None:
@@ -44,6 +45,10 @@ class BaseRouter(ABC):
 
 
 class BaseMainRouter(BaseRouter):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.container = AppContainer()
+
     @abstractmethod
     def install(
         self,
