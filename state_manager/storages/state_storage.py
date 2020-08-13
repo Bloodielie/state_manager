@@ -11,7 +11,7 @@ class StateStorage:
         self._state_store: Dict[str, Set[StateModel]] = {}
 
     def add_state(self, state_model: StateModel) -> None:
-        logger.debug(f"add_state, {state_model=}")
+        logger.debug(f"add_state, state_model={state_model}")
         state_store = self._state_store.get(state_model.event_type)
         if state_store is None:
             self._state_store[state_model.event_type] = {state_model}
@@ -19,7 +19,7 @@ class StateStorage:
             state_store.add(state_model)
 
     def get_state(self, event_type: str, name: str) -> Optional[Generator[StateModel, None, None]]:
-        logger.debug(f"get_state, {event_type=}, {name=}")
+        logger.debug(f"get_state, event_type={event_type}, name={name}")
         state_store = self._state_store.get(event_type)
         if state_store is None:
             return None

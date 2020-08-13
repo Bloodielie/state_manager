@@ -55,7 +55,9 @@ class AiogramStateMiddleware(BaseMiddleware):
         dependency_container = ContainerWrapper(container)
         dependency_container.add_dependency(TelegramObject, ctx)
         dependency_container.add_dependency(dict, data)
-        if storage_ := container.get(BaseStorage):
+
+        storage_ = container.get(BaseStorage)
+        if storage_ is not None:
             dependency_container.add_dependency(
                 BaseStateManager, AiogramStateManager(storage=storage_.implementation, context=ctx)
             )
@@ -112,5 +114,5 @@ class AiogramMainRouter(AiogramRouter, BaseMainRouter):
         self.container.bind_constant(Bot, self.dispatcher.bot)
 
         logger.info(f"Install AiogramMainRouter")
-        logger.debug(f"install, {storage=}, {default_state_name=}, {is_cached=}")
+        logger.debug(f"install, storage{storage}, default_state_name={default_state_name}, is_cached={is_cached}")
         self.dispatcher.middleware.setup(AiogramStateMiddleware(self.storage, storage, default_state_name, is_cached))

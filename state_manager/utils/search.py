@@ -41,7 +41,7 @@ class HandlerFinder:
         self, dependency_storage: ContainerWrapper, state_name: str, event_type: str,
     ) -> Optional[Callable]:
         if self._is_cache:
-            logger.debug(f"Get state handler in cache, {state_name=}, {event_type=}, {dependency_storage=}")
+            logger.debug(f"Get state handler in cache, state_name={state_name}, event_type={event_type}, dependency_storage={dependency_storage}")
             callback, filter_ = self._handler_in_cache.get((state_name, event_type), (None, None))
             if callback is not None and filter_ is None:
                 return callback

@@ -42,7 +42,7 @@ class VkWaveMainRouter(VkWaveRouter, BaseMainRouter):
         is_cached: bool = True,
     ) -> None:
         logger.info(f"Install VkWaveMainRouter")
-        logger.debug(f"install, {storage=}, {default_state_name=}, {is_cached=}")
+        logger.debug(f"install, storage={storage}, default_state_name={default_state_name}, is_cached={is_cached}")
         self._handler_finder = HandlerFinder(self.storage, is_cached)
         self._default_state_name = default_state_name or "home"
 
@@ -61,7 +61,9 @@ class VkWaveMainRouter(VkWaveRouter, BaseMainRouter):
         container = AppContainer.get_current()
         dependency_container = ContainerWrapper(container)
         dependency_container.add_dependency(BaseEvent, simple_event)
-        if storage_ := container.get(BaseStorage):
+
+        storage_ = container.get(BaseStorage)
+        if storage_ is not None:
             dependency_container.add_dependency(
                 BaseStateManager, VkWaveStateManager(storage=storage_.implementation, context=simple_event)
             )

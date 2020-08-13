@@ -31,7 +31,9 @@ class BaseRouter(ABC):
             state_names = [state_name]
         else:
             state_names = state_name
-        logger.debug(f"registration_state_handler, {event_type=}, {handler=}, {state_names=}, {filters=}")
+        logger.debug(
+            f"registration_state_handler, event_type={event_type}, handler={handler}, state_names={state_names}, filters={filters}"
+        )
         if isinstance(filters, tuple) and (len(filters) == 0):
             filters = None
         for state_name in state_names:
@@ -40,7 +42,7 @@ class BaseRouter(ABC):
             self.storage.state_storage.add_state(state)
 
     def include_router(self, router: "BaseRouter") -> None:
-        logger.debug(f"include_router, {router=}")
+        logger.debug(f"include_router, router={router}")
         self.storage.routers.add(router)
 
 

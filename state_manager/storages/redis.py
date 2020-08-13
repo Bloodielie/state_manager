@@ -39,7 +39,7 @@ class RedisStorage(BaseStorage):
 
     async def get(self, key: str, default: typing.Optional[StateData] = None) -> typing.Optional[StateData]:
         conn = await self.redis()
-        logger.debug(f"get, {key=}, {default=}")
+        logger.debug(f"get, key={key}, default={default}")
         key_ = await conn.get(key)
         if key_:
             return StateData.parse_raw(key_)
@@ -47,14 +47,15 @@ class RedisStorage(BaseStorage):
 
     async def put(self, key: str, value: StateData) -> None:
         conn = await self.redis()
-        logger.debug(f"put, {key=}, {value=}")
-        if pre_state := await self.get(key):
+        logger.debug(f"put, key={key}, value={value}")
+        pre_state = await self.get(key)
+        if pre_state is not None:
             value.pre_state = pre_state.current_state
             await conn.set(key, value.json())
         await conn.set(key, value.json())
 
     async def delete(self, key: str) -> None:
-        logger.debug(f"delete, {key=}")
+        logger.debug(f"delete, key={key}")
         if not await self.contains(key):
             raise KeyError("Storage doesn't contain this key.")
 
@@ -63,7 +64,7 @@ class RedisStorage(BaseStorage):
 
     async def contains(self, key: str) -> bool:
         conn = await self.redis()
-        logger.debug(f"contains, {key=}")
+        logger.debug(f"contains, key={key}")
         return await conn.exists(key)
 
     async def redis(self) -> "aioredis.Redis":

@@ -14,12 +14,12 @@ class VkWaveStateManager(BaseStateManager):
     context: SimpleBotEvent
 
     async def set_next_state(self, state_name: str, *, data: Data = None) -> None:
-        logger.debug(f"set_next_state, {state_name=}, {data=}")
+        logger.debug(f"set_next_state, state_name={state_name}, data={data}")
         state_data = StateData(current_state=state_name, data=data)
         await self.storage.put(str(self.context.object.object.message.from_id), state_data)
 
     async def back_to_pre_state(self, *, data: Data = None) -> None:
-        logger.debug(f"back_to_pre_state, {data=}")
+        logger.debug(f"back_to_pre_state, data{data}")
         user_id = str(self.context.object.object.message.from_id)
         await back_to_pre_state_(self.storage, user_id, data)
 

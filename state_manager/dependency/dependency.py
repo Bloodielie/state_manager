@@ -91,5 +91,5 @@ async def search_attributes(dependency_storage: ContainerWrapper, signatures: in
 
 
 async def get_func_attributes(callable_: Callable[..., Any], dependency_storage: ContainerWrapper) -> Dict[str, Any]:
-    logger.debug(f"Get callable attr, {callable_=}, {dependency_storage=}")
+    logger.debug(f"Get callable attr, callable{callable_}, dependency_storage={dependency_storage}")
     return await search_attributes(dependency_storage, get_typed_signature(callable_))
