@@ -3,13 +3,13 @@ from typing import Optional
 
 from state_manager.models.dependencys.base import back_to_pre_state_, BaseStateManager
 from state_manager.models.state import StateData
-from state_manager.types import Context, Data
+from state_manager.types import aiogram_context, Data
 
 logger = getLogger(__name__)
 
 
 class AiogramStateManager(BaseStateManager):
-    context: Context
+    context: aiogram_context
 
     async def set_next_state(self, state_name: str, *, data: Data = None) -> None:
         logger.debug(f"set_next_state, state_name={state_name}, data={data}")

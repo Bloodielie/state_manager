@@ -1,9 +1,15 @@
 from typing import Any
 
 from pydantic import BaseModel
+from enum import IntEnum
+
+
+class Scope(IntEnum):
+    SINGLETON: int = 0
+    CONTEXT: int = 1
 
 
 class DependencyWrapper(BaseModel):
     type_: Any
     implementation: Any
-    is_constant: bool = False
+    scope: int = Scope.CONTEXT

@@ -13,7 +13,7 @@ from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
-from state_manager.types import Context
+from state_manager.types import aiogram_context
 from state_manager.utils.search import HandlerFinder
 from state_manager.utils.utils import get_state_name
 
@@ -50,7 +50,7 @@ class AiogramStateMiddleware(BaseMiddleware):
             return
         await self.post_process_handlers(callback_query, "edited_message", data)
 
-    async def post_process_handlers(self, ctx: Context, event_type: str, data: Optional[dict] = None) -> None:
+    async def post_process_handlers(self, ctx: aiogram_context, event_type: str, data: Optional[dict] = None) -> None:
         container = AppContainer.get_current()
         dependency_container = ContainerWrapper(container)
         dependency_container.add_dependency(TelegramObject, ctx)
@@ -65,7 +65,7 @@ class AiogramStateMiddleware(BaseMiddleware):
         state_name = await self._get_user_state_name(ctx)
         return await self._handler_finder.get_handler_and_run(dependency_container, state_name, event_type)
 
-    async def _get_user_state_name(self, ctx: Context) -> str:
+    async def _get_user_state_name(self, ctx: aiogram_context) -> str:
         user_id = ctx.from_user.id
         return await get_state_name(user_id, self._storage, self._default_state_name)
 
