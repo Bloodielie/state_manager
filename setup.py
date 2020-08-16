@@ -19,7 +19,7 @@ requirements = [
 setuptools.setup(
     name="state_manager",
     python_requires=">=3.7",
-    version="0.2.0",
+    version="0.2.1",
     packages=setuptools.find_packages(),
     url="https://github.com/Bloodielie/state_manager",
     license="Apache-2.0 License",

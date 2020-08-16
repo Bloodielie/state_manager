@@ -22,8 +22,6 @@ async def get_implementation(dependency: DependencyWrapper, dependency_container
 
 
 async def search_attributes(dependency_container: Container, signatures: inspect.Signature) -> Dict[str, Any]:
-    global i, q
-    i += 1
     callable_object_arguments = {}
     app_container = dependency_container.container
     for attr_name, parameter in signatures.parameters.items():
