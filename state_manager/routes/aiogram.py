@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Callable, Optional, Tuple, Union, List, Set
+from typing import Callable, Optional, Union, List, Set
 
 from aiogram import Dispatcher, Bot, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
@@ -13,7 +13,7 @@ from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
-from state_manager.types import aiogram_context
+from state_manager.types import aiogram_context, Filters, StateNames
 from state_manager.utils.search import HandlerFinder
 from state_manager.utils.utils import get_state_name
 
@@ -72,7 +72,10 @@ class AiogramStateMiddleware(BaseMiddleware):
 
 class AiogramRouter(BaseRouter):
     def default_handler_logic(
-        self, handler_name: str, filters: Optional[Tuple[Callable[..., bool], ...]], state_name: Optional[str] = None
+        self,
+        handler_name: str,
+        filters: Filters,
+        state_name: StateNames = None,
     ) -> Callable:
         def wrap(callback: Callable):
             self.registration_state_handler(handler_name, callback, state_name=state_name, filters=filters)
@@ -80,19 +83,24 @@ class AiogramRouter(BaseRouter):
 
         return wrap
 
-    def message_handler(self, *filters: Callable[..., bool], state_name: Optional[str] = None) -> Callable:
+    def message_handler(self, *filters: Filters, state_name: StateNames = None) -> Callable:
+        filters: Filters
         return self.default_handler_logic("message", filters, state_name)
 
-    def callback_query_handler(self, *filters: Callable[..., bool], state_name: Optional[str] = None) -> Callable:
+    def callback_query_handler(self, *filters: Filters, state_name: StateNames = None) -> Callable:
+        filters: Filters
         return self.default_handler_logic("callback_query", filters, state_name)
 
-    def edited_message_handler(self, *filters: Callable[..., bool], state_name: Optional[str] = None) -> Callable:
+    def edited_message_handler(self, *filters: Filters, state_name: StateNames = None) -> Callable:
+        filters: Filters
         return self.default_handler_logic("edited_message", filters, state_name)
 
-    def channel_post_handler(self, *filters: Callable[..., bool], state_name: Optional[str] = None) -> Callable:
+    def channel_post_handler(self, *filters: Filters, state_name: StateNames = None) -> Callable:
+        filters: Filters
         return self.default_handler_logic("channel_post", filters, state_name)
 
-    def edited_channel_post_handler(self, *filters: Callable[..., bool], state_name: Optional[str] = None) -> Callable:
+    def edited_channel_post_handler(self, *filters: Filters, state_name: StateNames = None) -> Callable:
+        filters: Filters
         return self.default_handler_logic("edited_channel_post", filters, state_name)
 
 

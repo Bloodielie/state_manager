@@ -7,6 +7,7 @@ from state_manager.storages.app import RouterStorage
 from state_manager.models.state import StateModel
 from state_manager.storages.base import BaseStorage
 from state_manager.storages.state_storage import StateStorage
+from state_manager.types import Filters, StateNames
 
 logger = getLogger(__name__)
 
@@ -24,8 +25,8 @@ class BaseRouter(ABC):
         event_type: str,
         handler: Callable,
         *,
-        state_name: Optional[Union[str, List[Optional[str]]]] = None,
-        filters: Optional[Tuple[Callable[..., bool], ...]] = None,
+        state_name: StateNames = None,
+        filters: Filters = None,
     ) -> None:
         if isinstance(state_name, str) or state_name is None:
             state_names = [state_name]

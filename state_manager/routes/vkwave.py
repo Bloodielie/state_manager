@@ -12,6 +12,7 @@ from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
+from state_manager.types import Filters, StateNames
 from state_manager.utils.search import HandlerFinder
 from state_manager.utils.utils import get_state_name
 
@@ -19,7 +20,9 @@ logger = getLogger(__name__)
 
 
 class VkWaveRouter(BaseRouter):
-    def message_handler(self, *filters: Callable[..., bool], state_name: Optional[str] = None) -> Callable:
+    def message_handler(self, *filters: Filters, state_name: StateNames = None) -> Callable:
+        filters: Filters
+
         def wrap(callback: Callable):
             self.registration_state_handler("message", callback, state_name=state_name, filters=filters)
             return callback
