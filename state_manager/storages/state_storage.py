@@ -1,4 +1,4 @@
-from typing import Dict, Set, Generator, Optional
+from typing import Dict, Set, Generator, Optional, Union, List
 
 from state_manager.models.state import StateModel
 from logging import getLogger
@@ -18,11 +18,11 @@ class StateStorage:
         else:
             state_store.add(state_model)
 
-    def get_state(self, event_type: str, name: str) -> Optional[Generator[StateModel, None, None]]:
+    def get_state(self, event_type: str, name: str) -> Optional[Union[Generator[StateModel, None, None], List]]:
         logger.debug(f"get_state, event_type={event_type}, name={name}")
         state_store = self._state_store.get(event_type)
         if state_store is None:
-            return None
+            return []
         for state in state_store:
             if state.name != name:
                 continue
