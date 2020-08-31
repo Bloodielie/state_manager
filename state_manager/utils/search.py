@@ -12,6 +12,8 @@ from state_manager.utils.check import check_function_and_run, check_filter_resul
 
 logger = getLogger(__name__)
 
+all_state_alias = "*"
+
 
 async def run_filter(filter_: Union[Callable[..., Any], BaseFilter], dependency_storage: ContainerWrapper,) -> bool:
     if isinstance(filter_, BaseFilter):
@@ -20,6 +22,20 @@ async def run_filter(filter_: Union[Callable[..., Any], BaseFilter], dependency_
 
     filter_attr = await get_func_attributes(filter_, dependency_storage)
     return check_filter_result(await check_function_and_run(filter_, **filter_attr))
+
+
+async def _find_handler_in_storages(handler_storages, dependency_storage, callback_search_func):
+    for handler_storage in handler_storages:
+        if handler_storage.handler is not None and handler_storage.filters is None:
+            return handler_storage.handler
+        elif handler_storage.handler is None and handler_storage.filters is None:
+            return await callback_search_func()
+
+        for filter_ in handler_storage.filters:
+            filter_result = await run_filter(filter_, dependency_storage)
+            if handler_storage.handler is not None and filter_ is not None and filter_result:
+                return handler_storage.handler
+        return await callback_search_func()
 
 
 class HandlerFinder:
@@ -38,6 +54,15 @@ class HandlerFinder:
     async def get_state_callback(
         self, dependency_storage: ContainerWrapper, state_name: str, event_type: str,
     ) -> Optional[Callable]:
+        handler_storages = self._handler_in_cache.get((all_state_alias, event_type), None)
+        if handler_storages is not None:
+            callback_search_func = partial(self._get_state_callback, dependency_storage, all_state_alias, event_type)
+            all_state_result = await _find_handler_in_storages(handler_storages, dependency_storage, callback_search_func)
+        else:
+            all_state_result = await self._get_state_callback(dependency_storage, all_state_alias, event_type)
+        if all_state_result is not None:
+            return all_state_result
+
         if self._is_cache:
             logger.debug(
                 f"Get state handler in cache, state_name={state_name}, event_type={event_type}, dependency_storage={dependency_storage}"
@@ -46,17 +71,8 @@ class HandlerFinder:
             if handler_storages is None:
                 return await self._get_state_callback(dependency_storage, state_name, event_type)
 
-            for handler_storage in handler_storages:
-                if handler_storage.handler is not None and handler_storage.filters is None:
-                    return handler_storage.handler
-                elif handler_storage.handler is None and handler_storage.filters is None:
-                    return await self._get_state_callback(dependency_storage, state_name, event_type)
-
-                for filter_ in handler_storage.filters:
-                    filter_result = await run_filter(filter_, dependency_storage)
-                    if handler_storage.handler is not None and filter_ is not None and filter_result:
-                        return handler_storage.handler
-                return await self._get_state_callback(dependency_storage, state_name, event_type)
+            callback_search_func = partial(self._get_state_callback, dependency_storage, state_name, event_type)
+            return await _find_handler_in_storages(handler_storages, dependency_storage, callback_search_func)
         else:
             return await self._get_state_callback(dependency_storage, state_name, event_type)
 
