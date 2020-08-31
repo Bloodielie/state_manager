@@ -8,7 +8,7 @@ from aiogram.types.base import TelegramObject
 from state_manager import BaseStateManager
 from state_manager.dependency.container import AppContainer, ContainerWrapper
 from state_manager.models.dependencys.aiogram import AiogramStateManager
-from state_manager.models.routers_storage import RouterStorage
+from state_manager.storages.app import RouterStorage
 from state_manager.routes.base import BaseRouter, BaseMainRouter
 from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
