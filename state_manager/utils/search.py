@@ -1,11 +1,11 @@
 from functools import partial
 from logging import getLogger
-from typing import Callable, Optional, Set, Dict, Tuple, Union, Any
+from typing import Callable, Optional, Set, Dict, Tuple, Union, Any, List
 
 from state_manager.dependency.container import ContainerWrapper
 from state_manager.dependency.dependency import get_func_attributes
 from state_manager.filters.base import BaseFilter
-from state_manager.models.routers_storage import RouterStorage
+from state_manager.storages.app import RouterStorage, HandlerStorage
 from state_manager.routes.base import BaseRouter
 from state_manager.storages.state_storage import StateStorage
 from state_manager.utils.check import check_function_and_run, check_filter_result
@@ -26,7 +26,7 @@ class HandlerFinder:
     def __init__(self, router_storage: RouterStorage, is_cache: bool = False) -> None:
         self.router_storage = router_storage
         self._is_cache = is_cache
-        self._handler_in_cache: Dict[Tuple[str, str], Tuple[Callable, Callable]] = {}
+        self._handler_in_cache: Dict[Tuple[str, str], List[HandlerStorage]] = {}
 
     async def get_handler_and_run(self, dependency_storage: ContainerWrapper, state_name: str, event_type: str):
         callback = await self.get_state_callback(dependency_storage, state_name, event_type)
@@ -42,14 +42,21 @@ class HandlerFinder:
             logger.debug(
                 f"Get state handler in cache, state_name={state_name}, event_type={event_type}, dependency_storage={dependency_storage}"
             )
-            callback, filter_ = self._handler_in_cache.get((state_name, event_type), (None, None))
-            if callback is not None and filter_ is None:
-                return callback
-            elif callback is None and filter_ is None:
+            handler_storages = self._handler_in_cache.get((state_name, event_type), None)
+            if handler_storages is None:
                 return await self._get_state_callback(dependency_storage, state_name, event_type)
-            filter_result = await run_filter(filter_, dependency_storage)  # type: ignore
-            if callback is not None and filter_ is not None and filter_result:
-                return callback
+
+            for handler_storage in handler_storages:
+                if handler_storage.handler is not None and handler_storage.filters is None:
+                    return handler_storage.handler
+                elif handler_storage.handler is None and handler_storage.filters is None:
+                    return await self._get_state_callback(dependency_storage, state_name, event_type)
+
+                for filter_ in handler_storage.filters:
+                    filter_result = await run_filter(filter_, dependency_storage)
+                    if handler_storage.handler is not None and filter_ is not None and filter_result:
+                        return handler_storage.handler
+                return await self._get_state_callback(dependency_storage, state_name, event_type)
         else:
             return await self._get_state_callback(dependency_storage, state_name, event_type)
 
@@ -70,16 +77,27 @@ class HandlerFinder:
         states = state_storage.get_state(event_type, state_name)
         if states is None:
             return None
+        result = None
         for state in states:
             if state.filters is None:
-                return state.handler
+                result = HandlerStorage(handler=state.handler, filters=None)
+                break
             for filter_ in state.filters:
+
                 filter_result = await run_filter(filter_, dependency_storage)
                 if not filter_result:
                     continue
-                if self._is_cache:
-                    self._handler_in_cache[(state_name, event_type)] = (state.handler, filter_)
-                return state.handler
+                result = HandlerStorage(handler=state.handler, filters=state.filters)
+                break
+
+        if result is not None:
+            if self._is_cache:
+                value_in_cache = self._handler_in_cache.get((state_name, event_type))
+                if value_in_cache is None:
+                    self._handler_in_cache[(state_name, event_type)] = [result]
+                else:
+                    value_in_cache.append(result)
+            return result.handler
 
     @classmethod
     async def _search_callback_in_routes(cls, routes: Set[BaseRouter], search_func: Callable) -> Optional[Callable]:

@@ -9,7 +9,7 @@ BaseRouters = TypeVar("BaseRouters")
 
 class RouterStorage(GenericModel, Generic[BaseRouters]):
     state_storage: StateStorage
-    routers: Set[BaseRouters]
+    routers: Set[BaseRouters] = set()
 
     class Config:
         arbitrary_types_allowed = True
