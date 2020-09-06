@@ -4,7 +4,7 @@
 [Russian version](https://github.com/Bloodielie/state_manager/tree/master/README_ru.md)
 ___
 ## Installation
-`Supports python3.8+`
+`Supports python3.7+`
 
 Library only
 ```sh
@@ -29,12 +29,12 @@ pip install state-manager[full]
 ```python
 from vkwave.bots import SimpleLongPollBot
 import logging
-from state_manager import VkWaveMainRouter, VkWaveStateManager
+from state_manager.routes.vkwave import VkWaveMainStateRouter, VkWaveStateManager
 
 logging.basicConfig(level=logging.INFO)
 
 bot = SimpleLongPollBot(tokens="your token", group_id=123123,)
-main_state = VkWaveMainRouter(bot)
+main_state = VkWaveMainStateRouter(bot)
 
 @main_state.message_handler()
 async def home(event: bot.SimpleBotEvent, state_manager: VkWaveStateManager):
@@ -53,14 +53,13 @@ bot.run_forever(ignore_errors=True)
 ```python
 import logging
 from aiogram import Bot, Dispatcher, executor, types
-from state_manager import AiogramStateManager
-from state_manager.routes.aiogram import AiogramMainRouter
+from state_manager.routes.aiogram import AiogramMainStateRouter, AiogramStateManager
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token='your token')
 dp = Dispatcher(bot)
-main_state = AiogramMainRouter(dp)
+main_state = AiogramMainStateRouter(dp)
 main_state.install()
 
 @main_state.message_handler()
@@ -100,12 +99,9 @@ The library supports out of the box:
 You can also write your filters.
 [aiogram](https://github.com/Bloodielie/state_manager/tree/master/examples/aiogram/their_filters.py), [vkwave](https://github.com/Bloodielie/state_manager/tree/master/examples/vkwave/their_filters.py)
 
-## Architecture
+## TODO  
 
-**Search state in routers**
+- [ ] Middleware
+- [ ] SyncEvent
+- [ ] VkBottle support
 
-![alt text](images/architecture_1.png)
-___
-**Router architecture**
-
-![alt text](images/architecture_2.png)

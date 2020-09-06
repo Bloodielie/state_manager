@@ -5,7 +5,7 @@ from typing import Dict, Any, Callable
 from state_manager import Depends
 from state_manager.dependency.models import Scope, DependencyWrapper
 from state_manager.dependency.signature import get_signature_to_implementation, get_typed_signature
-from state_manager.types import Container
+from state_manager.types.generals import Container
 from state_manager.utils.check import check_function_and_run
 
 logger = getLogger(__name__)

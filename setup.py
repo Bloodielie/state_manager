@@ -13,13 +13,14 @@ requirements = [
     "aioredis==1.3.1",
     "pydantic==1.6",
     "python-dotenv==0.14.0",
+    "httpx~=0.14.3"
 ]
 
 
 setuptools.setup(
     name="state_manager",
     python_requires=">=3.7",
-    version="0.2.1",
+    version="0.3.0",
     packages=setuptools.find_packages(),
     url="https://github.com/Bloodielie/state_manager",
     license="Apache-2.0 License",
@@ -44,7 +45,7 @@ setuptools.setup(
     },
     include_package_data=False,
     classifiers=[
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Internet",
     ],
 )

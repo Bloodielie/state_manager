@@ -3,9 +3,9 @@ from typing import Optional
 
 from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
 
-from state_manager.models.dependencys.base import BaseStateManager, back_to_pre_state_
+from state_manager.models.state_managers.base import BaseStateManager, back_to_pre_state_
 from state_manager.models.state import StateData
-from state_manager.types import Data
+from state_manager.types.generals import Data
 
 logger = getLogger(__name__)
 

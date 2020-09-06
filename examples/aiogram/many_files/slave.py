@@ -1,9 +1,8 @@
 from aiogram import types
 
-from state_manager.models.dependencys.aiogram import AiogramStateManager
-from state_manager.routes.aiogram import AiogramRouter
+from state_manager.routes.aiogram import AiogramStateRouter, AiogramStateManager
 
-state_router = AiogramRouter()
+state_router = AiogramStateRouter()
 
 
 @state_router.message_handler()

@@ -27,3 +27,7 @@ class StateStorage:
             if state.name != name:
                 continue
             yield state
+
+    @property
+    def state_store(self) -> Dict[str, Set[StateModel]]:
+        return self._state_store

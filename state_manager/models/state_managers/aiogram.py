@@ -1,9 +1,10 @@
 from logging import getLogger
 from typing import Optional
 
-from state_manager.models.dependencys.base import back_to_pre_state_, BaseStateManager
+from state_manager.models.state_managers.base import back_to_pre_state_, BaseStateManager
 from state_manager.models.state import StateData
-from state_manager.types import aiogram_context, Data
+from state_manager.types.aiogram import aiogram_context
+from state_manager.types.generals import Data
 
 logger = getLogger(__name__)
 

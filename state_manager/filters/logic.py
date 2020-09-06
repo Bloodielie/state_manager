@@ -1,4 +1,4 @@
-from state_manager.types import AnyText
+from state_manager.types.generals import AnyText
 
 
 def text_in_list(text: str, list: AnyText) -> bool:

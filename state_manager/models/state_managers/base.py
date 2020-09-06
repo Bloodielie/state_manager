@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from state_manager.models.state import StateData
 from state_manager.storages.base import BaseStorage
-from state_manager.types import Data
+from state_manager.types.generals import Data
 
 
 class Depends:

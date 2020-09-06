@@ -3,13 +3,13 @@ from vkwave.bots import SimpleLongPollBot
 import logging
 
 from state_manager import MemoryStorage
-from state_manager.models.dependencys.vkwave import VkWaveStateManager
-from state_manager.routes.vkwave import VkWaveMainRouter
+from state_manager.models.state_managers.vkwave import VkWaveStateManager
+from state_manager.routes.vkwave import VkWaveMainStateRouter
 
 logging.basicConfig(level=logging.INFO)
 
 bot = SimpleLongPollBot(tokens="your token", group_id=123123,)
-main_state = VkWaveMainRouter(bot)
+main_state = VkWaveMainStateRouter(bot)
 
 
 @main_state.message_handler()

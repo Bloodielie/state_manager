@@ -2,7 +2,7 @@
 > Удобная реализация FSM для telegram/vk
 ___
 ## Установка
-`Поддерживает python3.8+`
+`Поддерживает python3.7+`
 
 Только библиотеку
 ```sh
@@ -27,12 +27,12 @@ pip install state-manager[full]
 ```python
 from vkwave.bots import SimpleLongPollBot
 import logging
-from state_manager import VkWaveMainRouter, VkWaveStateManager
+from state_manager.routes.vkwave import VkWaveMainStateRouter, VkWaveStateManager
 
 logging.basicConfig(level=logging.INFO)
 
 bot = SimpleLongPollBot(tokens="your token", group_id=123123,)
-main_state = VkWaveMainRouter(bot)
+main_state = VkWaveMainStateRouter(bot)
 
 @main_state.message_handler()
 async def home(event: bot.SimpleBotEvent, state_manager: VkWaveStateManager):
@@ -51,14 +51,13 @@ bot.run_forever(ignore_errors=True)
 ```python
 import logging
 from aiogram import Bot, Dispatcher, executor, types
-from state_manager import AiogramStateManager
-from state_manager.routes.aiogram import AiogramMainRouter
+from state_manager.routes.aiogram import AiogramMainStateRouter, AiogramStateManager
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token='your token')
 dp = Dispatcher(bot)
-main_state = AiogramMainRouter(dp)
+main_state = AiogramMainStateRouter(dp)
 main_state.install()
 
 @main_state.message_handler()
@@ -97,13 +96,8 @@ executor.start_polling(dp, skip_updates=True)
 Также вы можете написать свои фильтры.  
 [aiogram](https://github.com/Bloodielie/state_manager/tree/master/examples/aiogram/their_filters.py), [vkwave](https://github.com/Bloodielie/state_manager/tree/master/examples/vkwave/their_filters.py)
 
+## TODO  
 
-## Архитектура
-
-**Поиск состояния в роутерах**
-
-![alt text](images/architecture_1.png)
-___
-**Архитектуры роутеров**
-
-![alt text](images/architecture_2.png)
+- [ ] Middleware
+- [ ] SyncEvent
+- [ ] поддержка VkBottle

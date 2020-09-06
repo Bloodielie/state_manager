@@ -5,13 +5,13 @@ from slave import state_router
 import logging
 
 from state_manager import MemoryStorage
-from state_manager.routes.vkwave import VkWaveMainRouter
+from state_manager.routes.vkwave import VkWaveMainStateRouter
 
 logging.basicConfig(level=logging.INFO)
 
 
 bot = SimpleLongPollBot(tokens="your token", group_id=123123,)
-main_state = VkWaveMainRouter(bot)
+main_state = VkWaveMainStateRouter(bot)
 main_state.include_router(state_router)
 
 

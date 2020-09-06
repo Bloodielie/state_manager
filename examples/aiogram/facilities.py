@@ -3,14 +3,13 @@ import logging
 from aiogram import Bot, Dispatcher, executor
 
 from state_manager import MemoryStorage
-from state_manager.models.dependencys.aiogram import AiogramStateManager
-from state_manager.routes.aiogram import AiogramMainRouter
+from state_manager.routes.aiogram import AiogramMainStateRouter, AiogramStateManager
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token='your token')
 dp = Dispatcher(bot)
-main_state = AiogramMainRouter(dp)
+main_state = AiogramMainStateRouter(dp)
 main_state.install(storage=MemoryStorage())
 
 

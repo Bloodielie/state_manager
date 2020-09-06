@@ -1,7 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 
-from state_manager.types import AnyText
+from state_manager.types.generals import AnyText
 
 
 class BaseFilter(ABC):

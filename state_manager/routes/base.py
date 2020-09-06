@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from logging import getLogger
-from typing import Callable, Optional, Set, Tuple, Union, List
+from typing import Callable, Optional, Set, Union, List
 
 from state_manager.dependency.container import AppContainer
 from state_manager.storages.app import RouterStorage
 from state_manager.models.state import StateModel
 from state_manager.storages.base import BaseStorage
 from state_manager.storages.state_storage import StateStorage
-from state_manager.types import Filters, StateNames
+from state_manager.types.generals import Filters, StateNames
 
 logger = getLogger(__name__)
 

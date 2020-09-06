@@ -1,26 +1,23 @@
 from logging import getLogger
-from typing import Callable, Optional, Any, Union, List, Set
+from typing import Callable, Optional, Union, List, Set
 
-from vkwave.bots import SimpleLongPollBot, BotEvent, EventTypeFilter, BaseEvent
-from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
-from vkwave.types.bot_events import BotEventType
+from vkwave.bots import SimpleLongPollBot, BotEvent
 
-from state_manager import BaseStateManager
-from state_manager.dependency.container import AppContainer, ContainerWrapper
-from state_manager.models.dependencys.vkwave import VkWaveStateManager
+from state_manager.event_processors.vkwave import VkWaveEventProcessor
+from state_manager.models.state_managers.vkwave import VkWaveStateManager
 from state_manager.routes.base import BaseRouter, BaseMainRouter
+from state_manager.routes.main import Router, MainRouter
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
-from state_manager.types import Filters, StateNames
-from state_manager.utils.search import HandlerFinder
+from state_manager.types.generals import Filters, StateNames, Filter
 from state_manager.utils.utils import get_state_name
 
 logger = getLogger(__name__)
 
 
-class VkWaveRouter(BaseRouter):
-    def message_handler(self, *filters: Filters, state_name: StateNames = None) -> Callable:
+class VkWaveStateRouter(BaseRouter):
+    def message_handler(self, *filters: Filter, state_name: StateNames = None) -> Callable:
         filters: Filters
 
         def wrap(callback: Callable):
@@ -30,7 +27,7 @@ class VkWaveRouter(BaseRouter):
         return wrap
 
 
-class VkWaveMainRouter(VkWaveRouter, BaseMainRouter):
+class VkWaveMainStateRouter(VkWaveStateRouter, BaseMainRouter):
     def __init__(
         self, bot: SimpleLongPollBot, routers: Optional[Union[List[BaseRouter], Set[BaseRouter]]] = None
     ) -> None:
@@ -46,36 +43,24 @@ class VkWaveMainRouter(VkWaveRouter, BaseMainRouter):
     ) -> None:
         logger.info(f"Install VkWaveMainRouter")
         logger.debug(f"install, storage={storage}, default_state_name={default_state_name}, is_cached={is_cached}")
-        self._handler_finder = HandlerFinder(self.storage, is_cached)
         self._default_state_name = default_state_name or "home"
-
         self._storage = storage or redis.RedisStorage(StorageSettings())
+
         self.container.bind_constant(BaseStorage, self._storage)
         self.container.bind_constant(SimpleLongPollBot, self.bot)
 
-        record = self.bot.router.registrar.new()
-        record.filters.append(EventTypeFilter(BotEventType.MESSAGE_NEW))
-        record.handle(self.bot.SimpleBotCallback(self._message_handler, self.bot.bot_type))
-        self.bot.router.registrar.register(record.ready())
-
-    async def _message_handler(self, event: BotEvent) -> Any:
-        simple_event = SimpleBotEvent(event)
-
-        container = AppContainer.get_current()
-        dependency_container = ContainerWrapper(container)
-        dependency_container.add_dependency(BaseEvent, simple_event)
-
-        storage_ = container.get(BaseStorage)
-        if storage_ is not None:
-            dependency_container.add_dependency(
-                BaseStateManager, VkWaveStateManager(storage=storage_.implementation, context=simple_event)
-            )
-
-        state_name = await self._get_state_name(simple_event)
-        handler_result = await self._handler_finder.get_handler_and_run(dependency_container, state_name, "message")
-        if handler_result is not None and isinstance(handler_result, str):
-            await simple_event.answer(handler_result)
+        VkWaveEventProcessor.install(self.bot, self.storage, storage, default_state_name, is_cached)
 
     async def _get_state_name(self, event: BotEvent) -> str:
         user_id = str(event.object.object.message.from_id)
         return await get_state_name(user_id, self._storage, self._default_state_name)
+
+
+class VkWaveRouter(Router):
+    def __init__(self):
+        super().__init__(mode="vkwave")
+
+
+class VkWaveMainRouter(MainRouter):
+    def __init__(self, token: str):
+        super().__init__(token, mode="vkwave")
