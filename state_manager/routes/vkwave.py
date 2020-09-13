@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import Callable, Optional, Union, List, Set
 
-from vkwave.bots import SimpleLongPollBot, BotEvent
+from vkwave.bots import SimpleLongPollBot
 
 from state_manager.event_processors.vkwave import VkWaveEventProcessor
 from state_manager.models.state_managers.vkwave import VkWaveStateManager
@@ -11,7 +11,6 @@ from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
 from state_manager.types.generals import Filters, StateNames, Filter
-from state_manager.utils.utils import get_state_name
 
 logger = getLogger(__name__)
 
@@ -50,10 +49,6 @@ class VkWaveMainStateRouter(VkWaveStateRouter, BaseMainRouter):
         self.container.bind_constant(SimpleLongPollBot, self.bot)
 
         VkWaveEventProcessor.install(self.bot, self.storage, storage, default_state_name, is_cached)
-
-    async def _get_state_name(self, event: BotEvent) -> str:
-        user_id = str(event.object.object.message.from_id)
-        return await get_state_name(user_id, self._storage, self._default_state_name)
 
 
 class VkWaveRouter(Router):

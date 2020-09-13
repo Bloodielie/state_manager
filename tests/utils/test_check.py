@@ -1,6 +1,7 @@
 import pytest
 
-from state_manager.utils.check import is_coroutine_callable, check_function_and_run
+from state_manager.utils.check import is_coroutine_callable
+from state_manager.utils.runers import check_function_and_run
 
 
 async def coroutine_test():

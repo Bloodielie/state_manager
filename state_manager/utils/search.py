@@ -1,6 +1,6 @@
 from functools import partial
 from logging import getLogger
-from typing import Callable, Optional, Set, Dict, Tuple, Union, Any, List
+from typing import Callable, Optional, Set, Dict, Tuple, List, Union, Any
 
 from state_manager.dependency.container import ContainerWrapper
 from state_manager.dependency.dependency import get_func_attributes
@@ -8,7 +8,8 @@ from state_manager.filters.base import BaseFilter
 from state_manager.storages.app import RouterStorage, HandlerStorage
 from state_manager.routes.base import BaseRouter
 from state_manager.storages.state_storage import StateStorage
-from state_manager.utils.check import check_function_and_run, check_filter_result
+from state_manager.utils.check import check_filter_result
+from state_manager.utils.runers import check_function_and_run
 
 logger = getLogger(__name__)
 
@@ -57,7 +58,9 @@ class HandlerFinder:
         handler_storages = self._handler_in_cache.get((all_state_alias, event_type), None)
         if handler_storages is not None:
             callback_search_func = partial(self._get_state_callback, dependency_storage, all_state_alias, event_type)
-            all_state_result = await _find_handler_in_storages(handler_storages, dependency_storage, callback_search_func)
+            all_state_result = await _find_handler_in_storages(
+                handler_storages, dependency_storage, callback_search_func
+            )
         else:
             all_state_result = await self._get_state_callback(dependency_storage, all_state_alias, event_type)
         if all_state_result is not None:
@@ -79,7 +82,8 @@ class HandlerFinder:
     async def _get_state_callback(
         self, dependency_storage: ContainerWrapper, state_name: str, event_type: str,
     ) -> Optional[Callable]:
-        handler_search = partial(self._callback_search, dependency_storage, event_type, state_name)
+        handler_search = partial(self._search_callback, dependency_storage, event_type, state_name)
+
         callback = await handler_search(self.router_storage.state_storage)
         if callback:
             return callback
@@ -87,19 +91,16 @@ class HandlerFinder:
         if callback:
             return callback
 
-    async def _callback_search(
+    async def _search_callback(
         self, dependency_storage: ContainerWrapper, event_type: str, state_name: str, state_storage: StateStorage,
     ) -> Optional[Callable]:
-        states = state_storage.get_state(event_type, state_name)
-        if states is None:
-            return None
+        """Finding the state passing all filters"""
         result = None
-        for state in states:
+        for state in state_storage.get_state(event_type, state_name):
             if state.filters is None:
                 result = HandlerStorage(handler=state.handler, filters=None)
                 break
             for filter_ in state.filters:
-
                 filter_result = await run_filter(filter_, dependency_storage)
                 if not filter_result:
                     continue
