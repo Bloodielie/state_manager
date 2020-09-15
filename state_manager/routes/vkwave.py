@@ -10,14 +10,13 @@ from state_manager.routes.main import Router, MainRouter
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings
-from state_manager.types.generals import Filters, StateNames, Filter
+from state_manager.types.generals import StateNames, Filter
 
 logger = getLogger(__name__)
 
 
 class VkWaveStateRouter(BaseRouter):
     def message_handler(self, *filters: Filter, state_name: StateNames = None) -> Callable:
-        filters: Filters
 
         def wrap(callback: Callable):
             self.registration_state_handler("message", callback, state_name=state_name, filters=filters)
@@ -37,18 +36,17 @@ class VkWaveMainStateRouter(VkWaveStateRouter, BaseMainRouter):
         self,
         *,
         storage: Optional[BaseStorage] = None,
-        default_state_name: Optional[str] = None,
-        is_cached: bool = True,
+        default_state_name: Optional[str] = None
     ) -> None:
         logger.info(f"Install VkWaveMainRouter")
-        logger.debug(f"install, storage={storage}, default_state_name={default_state_name}, is_cached={is_cached}")
+        logger.debug(f"install, storage={storage}, default_state_name={default_state_name}")
         self._default_state_name = default_state_name or "home"
         self._storage = storage or redis.RedisStorage(StorageSettings())
 
         self.container.bind_constant(BaseStorage, self._storage)
         self.container.bind_constant(SimpleLongPollBot, self.bot)
 
-        VkWaveEventProcessor.install(self.bot, self.storage, storage, default_state_name, is_cached)
+        VkWaveEventProcessor.install(self.bot, self._state_storage, storage, default_state_name)
 
 
 class VkWaveRouter(Router):

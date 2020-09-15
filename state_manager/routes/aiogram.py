@@ -54,7 +54,7 @@ class AiogramMainStateRouter(AiogramStateRouter, BaseMainRouter):
         self.dispatcher = dispatcher or Dispatcher.get_current()
 
     def install(
-        self, *, storage: Optional[BaseStorage] = None, default_state_name: Optional[str] = None, is_cached: bool = True
+        self, *, storage: Optional[BaseStorage] = None, default_state_name: Optional[str] = None
     ) -> None:
         storage = storage or redis.RedisStorage(StorageSettings())
         self.container.bind_constant(BaseStorage, storage)
@@ -62,8 +62,8 @@ class AiogramMainStateRouter(AiogramStateRouter, BaseMainRouter):
         self.container.bind_constant(Bot, self.dispatcher.bot)
 
         logger.info(f"Install AiogramMainRouter")
-        logger.debug(f"install, storage{storage}, default_state_name={default_state_name}, is_cached={is_cached}")
-        AiogramEventProcessor.install(self.dispatcher, self.storage, storage, default_state_name, is_cached)
+        logger.debug(f"install, storage{storage}, default_state_name={default_state_name}")
+        AiogramEventProcessor.install(self.dispatcher, self._state_storage, storage, default_state_name)
 
 
 class AiogramRouter(Router):

@@ -11,22 +11,22 @@ from state_manager.event_processors.base import BaseEventProcessor
 from state_manager.models.state_managers.aiogram import AiogramStateManager
 from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
-from state_manager.storages.app import RouterStorage
+from state_manager.storages.state_storage import StateStorage
 from state_manager.types.aiogram import aiogram_context
-from state_manager.utils.search import HandlerFinder
+from state_manager.utils.search import get_state_handler_and_run
 from state_manager.utils.utils import get_state_name
 
 
 class AiogramEventProcessor(BaseEventProcessor, BaseMiddleware):
     def __init__(
         self,
-        router_storage: RouterStorage,
-        storage: Optional[BaseStorage] = None,
+        state_storage: StateStorage,
+        state_data_storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
-        is_cached: bool = True,
     ) -> None:
-        self._handler_finder = HandlerFinder(router_storage, is_cached)
-        self._storage = storage or redis.RedisStorage(StorageSettings())
+        self._state_storage = state_storage
+
+        self._state_data_storage = state_data_storage or redis.RedisStorage(StorageSettings())
         self._default_state_name = default_state_name or "home"
         super().__init__()
 
@@ -60,19 +60,19 @@ class AiogramEventProcessor(BaseEventProcessor, BaseMiddleware):
             )
 
         state_name = await self._get_user_state_name(ctx)
-        return await self._handler_finder.get_handler_and_run(dependency_container, state_name, event_type)
+        return await get_state_handler_and_run(self._state_storage, dependency_container, state_name, event_type)
 
     @classmethod
     def install(
         cls,
         dispatcher: Dispatcher,
-        router_storage: RouterStorage,
-        storage: Optional[BaseStorage] = None,
+        state_storage: StateStorage,
+        state_data_storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
         is_cached: bool = True
     ) -> None:
-        dispatcher.middleware.setup(cls(router_storage, storage, default_state_name, is_cached))
+        dispatcher.middleware.setup(cls(state_storage, state_data_storage, default_state_name))
 
     async def _get_user_state_name(self, ctx: aiogram_context) -> str:
         user_id = ctx.from_user.id
-        return await get_state_name(user_id, self._storage, self._default_state_name)
+        return await get_state_name(user_id, self._state_data_storage, self._default_state_name)

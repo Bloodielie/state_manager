@@ -14,11 +14,11 @@ logger = getLogger(__name__)
 
 class BaseRouter(ABC):
     def __init__(self, routers: Optional[Union[List["BaseRouter"], Set["BaseRouter"]]] = None) -> None:
-        if isinstance(routers, list) or isinstance(routers, tuple):
-            routers = set(routers)
-        else:
-            routers = set()
-        self.storage = RouterStorage[BaseRouter](state_storage=StateStorage(), routers=routers)
+        self._state_storage = StateStorage()
+
+        routers = routers or []
+        for router in routers:
+            self.include_router(router)
 
     def registration_state_handler(
         self,
@@ -40,11 +40,11 @@ class BaseRouter(ABC):
         for state_name in state_names:
             state_name = state_name or handler.__name__
             state = StateModel(name=state_name, event_type=event_type, handler=handler, filters=filters)
-            self.storage.state_storage.add_state(state)
+            self._state_storage.add_state(state)
 
     def include_router(self, router: "BaseRouter") -> None:
         logger.debug(f"include_router, router={router}")
-        self.storage.routers.add(router)
+        self._state_storage.expand(router._state_storage)
 
 
 class BaseMainRouter(BaseRouter):
@@ -57,7 +57,6 @@ class BaseMainRouter(BaseRouter):
         self,
         *,
         storage: Optional[BaseStorage] = None,
-        default_state_name: Optional[str] = None,
-        is_cached: bool = True,
+        default_state_name: Optional[str] = None
     ) -> None:
         ...

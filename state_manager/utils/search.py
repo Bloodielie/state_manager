@@ -13,7 +13,7 @@ from state_manager.utils.runers import check_function_and_run
 
 logger = getLogger(__name__)
 
-all_state_alias = "*"
+all_state_name = "*"
 
 
 async def run_filter(filter_: Union[Callable[..., Any], BaseFilter], dependency_storage: ContainerWrapper,) -> bool:
@@ -23,6 +23,28 @@ async def run_filter(filter_: Union[Callable[..., Any], BaseFilter], dependency_
 
     filter_attr = await get_func_attributes(filter_, dependency_storage)
     return check_filter_result(await check_function_and_run(filter_, **filter_attr))
+
+
+async def get_state_handler(
+    state_storage: StateStorage, dependency_container: ContainerWrapper, state_name: str, event_type: str,
+):
+    for state_model in state_storage.get_state(event_type, [all_state_name, state_name]):
+        if state_model.filters is None:
+            return state_model.handler
+
+        for filter_ in state_model.filters:
+            filter_result = await run_filter(filter_, dependency_container)
+            if filter_result:
+                return state_model.handler
+
+
+async def get_state_handler_and_run(
+    state_storage: StateStorage, dependency_container: ContainerWrapper, state_name: str, event_type: str
+):
+    callback = await get_state_handler(state_storage, dependency_container, state_name, event_type)
+    if callback is not None:
+        func_attr = await get_func_attributes(callback, dependency_container)
+        return await check_function_and_run(callback, **func_attr)
 
 
 async def _find_handler_in_storages(handler_storages, dependency_storage, callback_search_func):
@@ -55,14 +77,14 @@ class HandlerFinder:
     async def get_state_callback(
         self, dependency_storage: ContainerWrapper, state_name: str, event_type: str,
     ) -> Optional[Callable]:
-        handler_storages = self._handler_in_cache.get((all_state_alias, event_type), None)
+        handler_storages = self._handler_in_cache.get((all_state_name, event_type), None)
         if handler_storages is not None:
-            callback_search_func = partial(self._get_state_callback, dependency_storage, all_state_alias, event_type)
+            callback_search_func = partial(self._get_state_callback, dependency_storage, all_state_name, event_type)
             all_state_result = await _find_handler_in_storages(
                 handler_storages, dependency_storage, callback_search_func
             )
         else:
-            all_state_result = await self._get_state_callback(dependency_storage, all_state_alias, event_type)
+            all_state_result = await self._get_state_callback(dependency_storage, all_state_name, event_type)
         if all_state_result is not None:
             return all_state_result
 

@@ -12,7 +12,8 @@ from state_manager.models.state_managers.vkwave import VkWaveStateManager
 from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
 from state_manager.storages.app import RouterStorage
-from state_manager.utils.search import HandlerFinder
+from state_manager.storages.state_storage import StateStorage
+from state_manager.utils.search import HandlerFinder, get_state_handler_and_run
 from state_manager.utils.utils import get_state_name
 
 logger = getLogger(__name__)
@@ -21,12 +22,11 @@ logger = getLogger(__name__)
 class VkWaveEventProcessor(BaseEventProcessor):
     def __init__(
         self,
-        router_storage: RouterStorage,
+        state_storage: StateStorage,
         storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
-        is_cached: bool = True,
     ) -> None:
-        self._handler_finder = HandlerFinder(router_storage, is_cached)
+        self._state_storage = state_storage
         self._storage = storage or redis.RedisStorage(StorageSettings())
         self._default_state_name = default_state_name or "home"
 
@@ -34,15 +34,11 @@ class VkWaveEventProcessor(BaseEventProcessor):
     def install(
         cls,
         bot: SimpleLongPollBot,
-        router_storage: RouterStorage,
+        state_storage: StateStorage,
         storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
-        is_cached: bool = True,
     ) -> None:
-        logger.info(f"Install VkWaveMainRouter")
-        logger.debug(f"install, storage={storage}, default_state_name={default_state_name}, is_cached={is_cached}")
-
-        self = cls(router_storage, storage, default_state_name, is_cached)
+        self = cls(state_storage, storage, default_state_name)
         cls._install_handler(bot, self._message_handler, BotEventType.MESSAGE_NEW)
 
     @staticmethod
@@ -66,7 +62,9 @@ class VkWaveEventProcessor(BaseEventProcessor):
             )
 
         state_name = await self._get_state_name(simple_event)
-        handler_result = await self._handler_finder.get_handler_and_run(dependency_container, state_name, "message")
+        handler_result = await get_state_handler_and_run(
+            self._state_storage, dependency_container, state_name, "message"
+        )
         if handler_result is not None and isinstance(handler_result, str):
             await simple_event.answer(handler_result)
 
