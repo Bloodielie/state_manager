@@ -95,7 +95,7 @@ class MainRouter(Router):
             self.on_shutdown(on_shutdown)
 
         self.install(storage=storage, default_state_name=default_state_name)
-        self.run()
+        self.start()
 
     def on_startup(self, func: Callable[..., Any]) -> None:
         self._events["on_startup"] = func
