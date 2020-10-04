@@ -13,7 +13,7 @@ from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
 from state_manager.storages.app import RouterStorage
 from state_manager.storages.state_storage import StateStorage
-from state_manager.utils.search import HandlerFinder, get_state_handler_and_run
+from state_manager.utils.search import get_state_handler_and_run
 from state_manager.utils.utils import get_state_name
 
 logger = getLogger(__name__)

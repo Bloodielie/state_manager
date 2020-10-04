@@ -4,6 +4,7 @@ from typing import Iterator, Dict, Any, Optional, Type, TypeVar
 from state_manager.dependency.models import DependencyWrapper, Scope
 from state_manager.dependency.utils import _check_annotation, _is_context_in_implementation_attr
 
+# todo: convert to a list with a check at startup
 try:
     from aiogram.types.base import TelegramObject as context
 except ImportError:
@@ -47,6 +48,10 @@ class AppContainer(ContextInstanceMixin):
         if scope == Scope.SINGLETON and _is_context_in_implementation_attr(implementation, context):
             scope = Scope.CONTEXT
         self.dependencies[annotation] = DependencyWrapper(type_=annotation, implementation=implementation, scope=scope)
+
+    def bind_singleton(self, annotation: Any, implementation: Any) -> None:
+        """Bind an object that will be initialized once"""
+        self.bind(annotation, implementation, scope=Scope.SINGLETON)
 
     def get(self, annotation: Any) -> Optional[DependencyWrapper]:
         for dependency in self.singleton_dependencies:
