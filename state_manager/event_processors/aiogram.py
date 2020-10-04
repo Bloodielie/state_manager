@@ -51,8 +51,9 @@ class AiogramEventProcessor(BaseEventProcessor, BaseMiddleware):
         container = AppContainer.get_current()
         dependency_container = ContainerWrapper(container)
         dependency_container.add_dependency(TelegramObject, ctx)
-        for value in data.values():
-            dependency_container.add_dependency(value.__class__, value)
+        if data is not None:
+            for value in data.values():
+                dependency_container.add_dependency(value.__class__, value)
 
         storage_ = container.get(BaseStorage)
         if storage_ is not None:

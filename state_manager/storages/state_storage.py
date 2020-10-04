@@ -1,4 +1,4 @@
-from typing import Dict, Set, Generator, Optional, Union, List
+from typing import Dict, Set, Generator, Optional, Union, List, Iterator
 
 from state_manager.models.state import StateModel
 from logging import getLogger
@@ -20,7 +20,7 @@ class StateStorage:
 
     def get_state(
             self, event_type: str, state_name: Union[str, List[str]]
-    ) -> Optional[Union[Generator[StateModel, None, None], List]]:
+    ) -> Union[Iterator[StateModel], List]:
         logger.debug(f"get_state, event_type={event_type}, state_name={state_name}")
         if isinstance(state_name, str):
             state_name = [state_name]

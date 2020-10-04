@@ -98,6 +98,6 @@ class AiogramMainRouter(BaseMainRouter, AiogramRouter):
         executor.start_polling(
             self.dp,
             skip_updates=True,
-            on_startup=self._events["on_startup"],
-            on_shutdown=self._events["on_shutdown"]
+            on_startup=self._events.on_startup,
+            on_shutdown=self._events.on_shutdown
         )

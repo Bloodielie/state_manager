@@ -1,11 +1,11 @@
 import inspect
 from logging import getLogger
-from typing import Callable, Any
+from typing import Callable, Any, Union, Awaitable
 
 logger = getLogger(__name__)
 
 
-def is_coroutine_callable(call: Callable) -> bool:
+def is_coroutine_callable(call: Union[Callable[..., Any], Awaitable[Any]]) -> bool:
     if inspect.isroutine(call):
         return inspect.iscoroutinefunction(call)
     if inspect.isclass(call):

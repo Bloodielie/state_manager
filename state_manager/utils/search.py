@@ -24,7 +24,7 @@ async def run_filter(filter_: Union[Callable[..., Any], BaseFilter], dependency_
 
 async def get_state_handler(
     state_storage: StateStorage, dependency_container: ContainerWrapper, state_name: str, event_type: str,
-) -> Optional[Optional[..., Any]]:
+) -> Optional[Callable[..., Any]]:
     for state_model in state_storage.get_state(event_type, [all_state_name, state_name]):
         if state_model.filters is None:
             return state_model.handler
