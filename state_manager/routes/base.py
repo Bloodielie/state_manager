@@ -10,6 +10,11 @@ from state_manager.storages.base import BaseStorage
 from state_manager.storages.state_storage import StateStorage
 from state_manager.types.generals import Filters, StateNames
 
+try:
+    from aiogram.types.base import TelegramObject as context
+except ImportError:
+    from vkwave.bots import BaseEvent as context
+
 logger = getLogger(__name__)
 
 
@@ -51,7 +56,7 @@ class BaseStateRouter(ABC):
 class BaseMainStateRouter(BaseStateRouter):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.container = AppContainer()
+        self.container = AppContainer([context])
 
     @abstractmethod
     def install(
@@ -75,7 +80,7 @@ class BaseRouter(ABC):
 class BaseMainRouter(BaseRouter):
     def __init__(self, token: str):
         self.token = token
-        self.container = AppContainer()
+        self.container = AppContainer([context])
         self._events = EventsModel()
         super().__init__()
 
