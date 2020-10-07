@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, List
 
 from pydantic import BaseModel
 from enum import IntEnum
@@ -13,3 +13,9 @@ class DependencyWrapper(BaseModel):
     type_: Any
     implementation: Any
     scope: int = Scope.CONTEXT
+
+
+class DependencyStorage(BaseModel):
+    dependencies: List[DependencyWrapper] = list()
+    singleton_dependencies: List[DependencyWrapper] = list()
+    constant_dependencies: List[DependencyWrapper] = list()

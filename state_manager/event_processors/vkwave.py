@@ -55,10 +55,10 @@ class VkWaveEventProcessor(BaseEventProcessor):
         dependency_container = ContainerWrapper(container)
         dependency_container.add_dependency(BaseEvent, simple_event)
 
-        storage_ = container.get(BaseStorage)
-        if storage_ is not None:
+        implementation_ = container.get(BaseStorage)
+        if implementation_ is not None:
             dependency_container.add_dependency(
-                BaseStateManager, VkWaveStateManager(storage=storage_.implementation, context=simple_event)
+                BaseStateManager, VkWaveStateManager(storage=implementation_, context=simple_event)
             )
 
         state_name = await self._get_state_name(simple_event)

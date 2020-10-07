@@ -2,7 +2,6 @@ from logging import getLogger
 from typing import Callable, Optional, Union, Any
 
 from state_manager.dependency.container import ContainerWrapper
-from state_manager.dependency.dependency import get_func_attributes
 from state_manager.filters.base import BaseFilter
 from state_manager.storages.state_storage import StateStorage
 from state_manager.utils.check import check_filter_result
@@ -15,11 +14,10 @@ all_state_name = "*"
 
 async def run_filter(filter_: Union[Callable[..., Any], BaseFilter], dependency_storage: ContainerWrapper,) -> bool:
     if isinstance(filter_, BaseFilter):
-        filter_attr = await get_func_attributes(filter_.check, dependency_storage)
-        return check_filter_result(await check_function_and_run(filter_.check, **filter_attr))
-
-    filter_attr = await get_func_attributes(filter_, dependency_storage)
-    return check_filter_result(await check_function_and_run(filter_, **filter_attr))
+        attr = dependency_storage.get_obj_attr(filter_.check)
+        return await check_function_and_run(filter_.check, **attr)
+    attr = dependency_storage.get_obj_attr(filter_)
+    return check_filter_result(await check_function_and_run(filter_, **attr))
 
 
 async def get_state_handler(
@@ -40,5 +38,5 @@ async def get_state_handler_and_run(
 ) -> Any:
     callback = await get_state_handler(state_storage, dependency_container, state_name, event_type)
     if callback is not None:
-        func_attr = await get_func_attributes(callback, dependency_container)
-        return await check_function_and_run(callback, **func_attr)
+        attr = dependency_container.get_obj_attr(callback)
+        return await check_function_and_run(callback, **attr)

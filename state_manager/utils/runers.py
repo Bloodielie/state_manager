@@ -1,7 +1,7 @@
 import asyncio
 import contextvars
 import functools
-from typing import Callable, Any, TypeVar, Union, Awaitable
+from typing import Callable, Any, TypeVar, Union, Awaitable, Coroutine
 
 from state_manager.utils.check import is_coroutine_callable
 

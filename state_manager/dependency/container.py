@@ -1,8 +1,12 @@
-from typing import Iterator, Dict, Any, Optional, List
+import inspect
+from typing import Iterator, Dict, Any, Optional, List, TypeVar, Type, Union, Callable
 
-from state_manager.dependency.models import DependencyWrapper, Scope
+from state_manager.dependency.models import DependencyWrapper, Scope, DependencyStorage
+from state_manager.dependency.signature import get_typed_signature, get_signature_to_implementation
 from state_manager.dependency.utils import _check_annotation, _is_context_in_implementation_attr
 from state_manager.utils.utils import ContextInstanceMixin
+
+T = TypeVar("T")
 
 
 def get_iterator_from_objects(*args: Any) -> Iterator[Any]:
@@ -14,69 +18,99 @@ def get_iterator_from_objects(*args: Any) -> Iterator[Any]:
 
 
 class AppContainer(ContextInstanceMixin):
-    _dependencies: Dict[Any, DependencyWrapper] = {}
-    _singleton_dependencies: Dict[Any, Any] = {}
-
     def __init__(self, context: Optional[List[Any]] = None) -> None:
         self._context = context or []
+        self._storage = DependencyStorage()
+
         self.bind_constant(AppContainer, self)
         self.set_current(self)
 
-    def bind_constant(self, annotation: Any, implementation: Any) -> None:
-        """Bind an object that does not need to be initialized"""
-        self.bind(annotation, implementation, scope=Scope.SINGLETON)
-
-    def bind(self, annotation: Any, implementation: Any, scope: int = Scope.CONTEXT) -> None:
-        """Bind an object to be initialized"""
-        if scope == Scope.SINGLETON:
-            for context in self._context:
-                if _is_context_in_implementation_attr(implementation, context):
-                    scope = Scope.CONTEXT
-                    break
-        self._dependencies[annotation] = DependencyWrapper(type_=annotation, implementation=implementation, scope=scope)
-
-    def bind_singleton(self, annotation: Any, implementation: Any) -> None:
+    def bind_singleton(self, annotation: Type[T], implementation: T) -> None:
         """Bind an object that will be initialized once"""
-        self.bind(annotation, implementation, scope=Scope.SINGLETON)
+        scope = Scope.SINGLETON
+        for context in self._context:
+            if _is_context_in_implementation_attr(implementation, context):
+                scope = Scope.CONTEXT
+                break
 
-    def get(self, annotation: Any) -> Optional[DependencyWrapper]:
-        for dependency in self._singleton_dependencies:
-            if _check_annotation(annotation, dependency):
-                return self._singleton_dependencies.get(dependency)
-        for dependency in self._dependencies:
-            if _check_annotation(annotation, dependency):
-                return self._dependencies.get(dependency)
+        if scope == Scope.CONTEXT:
+            self.bind(annotation, implementation, scope=Scope.CONTEXT)
+        elif scope == Scope.SINGLETON:
+            obj = self._resolve_dependency(implementation)
+            wrapper = DependencyWrapper(type_=annotation, implementation=obj, scope=Scope.SINGLETON)
+            self._storage.singleton_dependencies.append(wrapper)
 
-    def contains_singleton_dependency(self, annotation: Any) -> bool:
-        for dependency in self._singleton_dependencies:
-            if _check_annotation(annotation, dependency):
-                return True
-        return False
+    def bind_constant(self, annotation: Type[T], implementation: T) -> None:
+        """Bind an object that does not need to be initialized"""
+        wrapper = DependencyWrapper(type_=annotation, implementation=implementation, scope=Scope.SINGLETON)
+        self._storage.constant_dependencies.append(wrapper)
 
-    def add_singleton_implementation(self, annotation: Any, implementation: Any) -> None:
-        self._singleton_dependencies[annotation] = DependencyWrapper(
-            type_=annotation, implementation=implementation, scope=Scope.SINGLETON
-        )
+    def bind(self, annotation: Type[T], implementation: T, scope: int = Scope.CONTEXT) -> None:
+        """Bind an object to be initialized"""
+        wrapper = DependencyWrapper(type_=annotation, implementation=implementation, scope=scope)
+        self._storage.dependencies.append(wrapper)
 
-    def __iter__(self) -> Iterator[DependencyWrapper]:
-        for value in get_iterator_from_objects(self._dependencies.values(), self._singleton_dependencies.values()):
-            yield value
+    def get(self, annotation: Type[T]) -> Optional[T]:
+        for dependency_wrapper in self._storage.constant_dependencies:
+            if _check_annotation(annotation, dependency_wrapper.type_):
+                return dependency_wrapper.implementation
+        for dependency_wrapper in self._storage.singleton_dependencies:
+            if _check_annotation(annotation, dependency_wrapper.type_):
+                return dependency_wrapper.implementation
+        for dependency_wrapper in self._storage.dependencies:
+            if not _check_annotation(annotation, dependency_wrapper.type_):
+                continue
+            return self._get_implementation(dependency_wrapper.implementation)
+
+    def _get_obj_attr(self, signatures: inspect.Signature, call_to_get: Callable) -> Dict[str, Any]:
+        callable_object_arguments = {}
+        for attr_name, parameter in signatures.parameters.items():
+            annotation = parameter.annotation
+            dependency = call_to_get(annotation)
+            if dependency is not None:
+                callable_object_arguments[attr_name] = self._get_implementation(dependency.implementation)
+
+        return callable_object_arguments
+
+    def _resolve_dependency(self, obj, call_to_get: Optional[Callable] = None):
+        call_to_get = call_to_get or self._get
+        obj_attr = self._get_obj_attr(get_typed_signature(obj), call_to_get)
+        return obj(**obj_attr)
+
+    def _get_implementation(self, implementation: Union[Type[T], T]) -> T:
+        signature = get_signature_to_implementation(implementation)
+        if signature:
+            attr = self._get_obj_attr(signature, self._get)
+            implementation = implementation(**attr)
+        else:
+            implementation = implementation
+        return implementation
+
+    def _get(self, annotation: Any) -> Optional[DependencyWrapper]:
+        for dependency_wrapper in self._storage.constant_dependencies:
+            if _check_annotation(annotation, dependency_wrapper.type_):
+                return dependency_wrapper
+        for dependency_wrapper in self._storage.singleton_dependencies:
+            if _check_annotation(annotation, dependency_wrapper.type_):
+                return dependency_wrapper
+        for dependency_wrapper in self._storage.dependencies:
+            if _check_annotation(annotation, dependency_wrapper.type_):
+                return dependency_wrapper
 
 
 class ContainerWrapper:
     def __init__(self, container: AppContainer) -> None:
-        self.container = container
-        self.app_dependency: Dict[Any, DependencyWrapper] = {}
+        self._container = container
+        self._app_dependency: Dict[Any, DependencyWrapper] = {}
 
-    def add_dependency(self, annotation: Any, implementation: Any) -> None:
-        self.app_dependency[annotation] = DependencyWrapper(type_=annotation, implementation=implementation)
+    def add_dependency(self, annotation: Type[T], implementation: T) -> None:
+        self._app_dependency[annotation] = DependencyWrapper(type_=annotation, implementation=implementation)
 
     def get(self, annotation: Any) -> Optional[DependencyWrapper]:
-        for dependency in self.app_dependency:
+        for dependency in self._app_dependency:
             if _check_annotation(annotation, dependency):
-                return self.app_dependency.get(dependency)
-        return self.container.get(annotation)
+                return self._app_dependency.get(dependency)
+        return self._container._get(annotation)
 
-    def __iter__(self) -> Iterator[DependencyWrapper]:
-        for value in get_iterator_from_objects(self.container, self.app_dependency.values()):
-            yield value
+    def get_obj_attr(self, obj) -> Dict[str, Any]:
+        return self._container._get_obj_attr(get_typed_signature(obj), self.get)

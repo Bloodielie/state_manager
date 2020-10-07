@@ -75,9 +75,8 @@ class AiogramRouter(BaseRouter):
 
 
 class AiogramMainRouter(BaseMainRouter, AiogramRouter):
-    def __init__(self, token: str, group_id: int):
+    def __init__(self, token: str):
         super().__init__(token=token)
-        self.group_id = group_id
         bot = Bot(token=token)
         self.dp = Dispatcher(bot)
         self.inject_values = {Bot: bot, Dispatcher: self.dp}

@@ -55,10 +55,10 @@ class AiogramEventProcessor(BaseEventProcessor, BaseMiddleware):
             for value in data.values():
                 dependency_container.add_dependency(value.__class__, value)
 
-        storage_ = container.get(BaseStorage)
-        if storage_ is not None:
+        implementation_ = container.get(BaseStorage)
+        if implementation_ is not None:
             dependency_container.add_dependency(
-                BaseStateManager, AiogramStateManager(storage=storage_.implementation, context=ctx)
+                BaseStateManager, AiogramStateManager(storage=implementation_, context=ctx)
             )
 
         state_name = await self._get_user_state_name(ctx)
