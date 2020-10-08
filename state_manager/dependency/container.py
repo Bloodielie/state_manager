@@ -51,18 +51,20 @@ class AppContainer(ContextInstanceMixin):
         self._storage.dependencies.append(wrapper)
 
     def get(self, annotation: Type[T]) -> Optional[T]:
-        for dependency_wrapper in self._storage.constant_dependencies:
-            if _check_annotation(annotation, dependency_wrapper.type_):
-                return dependency_wrapper.implementation
-        for dependency_wrapper in self._storage.singleton_dependencies:
-            if _check_annotation(annotation, dependency_wrapper.type_):
-                return dependency_wrapper.implementation
+        """Get object from container"""
+        singleton_dependency = self._get_checked_dependency(
+            annotation, [self._storage.constant_dependencies, self._storage.singleton_dependencies]
+        )
+        if singleton_dependency is not None:
+            return singleton_dependency.implementation
+
         for dependency_wrapper in self._storage.dependencies:
             if not _check_annotation(annotation, dependency_wrapper.type_):
                 continue
             return self._get_implementation(dependency_wrapper.implementation)
 
     def _get_obj_attr(self, signatures: inspect.Signature, call_to_get: Callable) -> Dict[str, Any]:
+        """Get resolved object attributes"""
         callable_object_arguments = {}
         for attr_name, parameter in signatures.parameters.items():
             annotation = parameter.annotation
@@ -73,6 +75,7 @@ class AppContainer(ContextInstanceMixin):
         return callable_object_arguments
 
     def _resolve_dependency(self, obj, call_to_get: Optional[Callable] = None):
+        """Resolved class dependencies and initialize it"""
         call_to_get = call_to_get or self._get
         obj_attr = self._get_obj_attr(get_typed_signature(obj), call_to_get)
         return obj(**obj_attr)
@@ -87,15 +90,17 @@ class AppContainer(ContextInstanceMixin):
         return implementation
 
     def _get(self, annotation: Any) -> Optional[DependencyWrapper]:
-        for dependency_wrapper in self._storage.constant_dependencies:
-            if _check_annotation(annotation, dependency_wrapper.type_):
-                return dependency_wrapper
-        for dependency_wrapper in self._storage.singleton_dependencies:
-            if _check_annotation(annotation, dependency_wrapper.type_):
-                return dependency_wrapper
-        for dependency_wrapper in self._storage.dependencies:
-            if _check_annotation(annotation, dependency_wrapper.type_):
-                return dependency_wrapper
+        """Get unresolved object/class"""
+        return self._get_checked_dependency(
+            annotation, [self._storage.constant_dependencies, self._storage.singleton_dependencies, self._storage.dependencies]
+        )
+
+    @staticmethod
+    def _get_checked_dependency(annotation: Any, dependencies: List[List[DependencyWrapper]]) -> Optional[DependencyWrapper]:
+        for dependency in dependencies:
+            for dependency_wrapper in dependency:
+                if _check_annotation(annotation, dependency_wrapper.type_):
+                    return dependency_wrapper
 
 
 class ContainerWrapper:
