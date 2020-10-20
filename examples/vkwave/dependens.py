@@ -4,7 +4,7 @@ import logging
 
 from state_manager import MemoryStorage
 from state_manager.models.state_managers.vkwave import VkWaveStateManager
-from state_manager.routes.vkwave import VkWaveMainStateRouter
+from state_manager.routes.vkwave.state import VkWaveMainStateRouter
 from state_manager.storages.base import BaseStorage
 
 logging.basicConfig(level=logging.INFO)

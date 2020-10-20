@@ -27,7 +27,7 @@ pip install state-manager[full]
 ```python
 from vkwave.bots import SimpleLongPollBot
 import logging
-from state_manager.routes.vkwave import VkWaveMainStateRouter, VkWaveStateManager
+from state_manager.routes.vkwave.state import VkWaveMainStateRouter, VkWaveStateManager
 
 logging.basicConfig(level=logging.INFO)
 
