@@ -44,4 +44,4 @@ class VkWaveMainStateRouter(VkWaveStateRouter, BaseMainStateRouter):
         self.container.add_constant(BaseStorage, self._storage)
         self.container.add_constant(SimpleLongPollBot, self.bot)
 
-        VkWaveEventProcessor.install(self.bot, self._state_storage, storage, default_state_name)
+        VkWaveEventProcessor.install(self.bot, self.container, self._state_storage, storage, default_state_name)

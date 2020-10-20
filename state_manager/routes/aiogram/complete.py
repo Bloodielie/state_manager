@@ -37,7 +37,7 @@ class AiogramMainRouter(BaseMainRouter, AiogramRouter):
         for class_, instance in self.inject_values.items():
             self.container.add_constant(class_, instance)
 
-        AiogramEventProcessor.install(self.dp, self._state_storage, storage, default_state_name)
+        AiogramEventProcessor.install(self.dp, self._state_storage, self.container, storage, default_state_name)
 
     def start(self) -> None:
         logger.info(f"start AiogramMainRouter")

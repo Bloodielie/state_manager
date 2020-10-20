@@ -14,6 +14,7 @@ from state_manager.storage_settings import StorageSettings
 from state_manager.storages import redis
 from state_manager.storages.app import RouterStorage
 from state_manager.storages.state_storage import StateStorage
+from state_manager.types.generals import BaseContainer
 from state_manager.utils.search import get_state_handler_and_run
 from state_manager.utils.utils import get_state_name
 
@@ -24,22 +25,25 @@ class VkWaveEventProcessor(BaseEventProcessor):
     def __init__(
         self,
         state_storage: StateStorage,
+        container: BaseContainer,
         storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
     ) -> None:
         self._state_storage = state_storage
         self._storage = storage or redis.RedisStorage(StorageSettings())
         self._default_state_name = default_state_name or "home"
+        self._container = container
 
     @classmethod
     def install(
         cls,
         bot: SimpleLongPollBot,
         state_storage: StateStorage,
+        container: BaseContainer,
         storage: Optional[BaseStorage] = None,
         default_state_name: Optional[str] = None,
     ) -> None:
-        self = cls(state_storage, storage, default_state_name)
+        self = cls(state_storage, container, storage, default_state_name)
         cls._install_handler(bot, self._message_handler, BotEventType.MESSAGE_NEW)
 
     @staticmethod
@@ -52,18 +56,17 @@ class VkWaveEventProcessor(BaseEventProcessor):
     async def _message_handler(self, event: BotEvent) -> Any:
         simple_event = SimpleBotEvent(event)
 
-        container = Container.get_current()
-        container.add_context(BaseEvent, simple_event)
+        self._container.add_context(BaseEvent, simple_event)
 
         try:
-            implementation_ = container.get(BaseStorage)
-            container.add_context(BaseStateManager, VkWaveStateManager(storage=implementation_, context=simple_event))
+            implementation_ = self._container.get(BaseStorage)
+            self._container.add_context(BaseStateManager, VkWaveStateManager(storage=implementation_, context=simple_event))
         except DependencyNotFound:
             pass
 
         state_name = await self._get_state_name(simple_event)
         handler_result = await get_state_handler_and_run(
-            self._state_storage, container, state_name, "message"
+            self._state_storage, self._container, state_name, "message"
         )
         if handler_result is not None and isinstance(handler_result, str):
             await simple_event.answer(handler_result)

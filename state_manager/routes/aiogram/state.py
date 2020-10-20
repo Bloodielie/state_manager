@@ -61,4 +61,4 @@ class AiogramMainStateRouter(AiogramStateRouter, BaseMainStateRouter):
 
         logger.info(f"Install AiogramMainRouter")
         logger.debug(f"install, storage{storage}, default_state_name={default_state_name}")
-        AiogramEventProcessor.install(self.dispatcher, self._state_storage, storage, default_state_name)
+        AiogramEventProcessor.install(self.dispatcher, self._state_storage, self.container, storage, default_state_name)
