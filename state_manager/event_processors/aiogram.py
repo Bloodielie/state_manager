@@ -6,7 +6,8 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.types.base import TelegramObject
 
 from state_manager import BaseStorage, BaseStateManager
-from state_manager.dependency.container import AppContainer, ContainerWrapper
+from pyject import Container
+from pyject import DependencyNotFound
 from state_manager.event_processors.base import BaseEventProcessor
 from state_manager.models.state_managers.aiogram import AiogramStateManager
 from state_manager.storage_settings import StorageSettings
@@ -48,21 +49,23 @@ class AiogramEventProcessor(BaseEventProcessor, BaseMiddleware):
         await self.post_process_handlers(callback_query, "edited_message", data)
 
     async def post_process_handlers(self, ctx: aiogram_context, event_type: str, data: Optional[dict] = None) -> None:
-        container = AppContainer.get_current()
-        dependency_container = ContainerWrapper(container)
-        dependency_container.add_dependency(TelegramObject, ctx)
+        container = Container.get_current()
+
+        container.add_context(TelegramObject, ctx)
+
         if data is not None:
             for value in data.values():
-                dependency_container.add_dependency(value.__class__, value)
+                container.add_context(value.__class__, value)
 
-        implementation_ = container.get(BaseStorage)
-        if implementation_ is not None:
-            dependency_container.add_dependency(
-                BaseStateManager, AiogramStateManager(storage=implementation_, context=ctx)
-            )
+        try:
+            implementation_ = container.get(BaseStorage)
+            state_manager = AiogramStateManager(storage=implementation_, context=ctx)
+            container.add_context(BaseStateManager, state_manager)
+        except DependencyNotFound:
+            pass
 
         state_name = await self._get_user_state_name(ctx)
-        return await get_state_handler_and_run(self._state_storage, dependency_container, state_name, event_type)
+        return await get_state_handler_and_run(self._state_storage, container, state_name, event_type)
 
     @classmethod
     def install(

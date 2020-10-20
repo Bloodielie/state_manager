@@ -6,7 +6,8 @@ from vkwave.bots.addons.easy.base_easy_bot import SimpleBotEvent
 from vkwave.types.bot_events import BotEventType
 
 from state_manager import BaseStorage, BaseStateManager
-from state_manager.dependency.container import AppContainer, ContainerWrapper
+from pyject import Container
+from pyject import DependencyNotFound
 from state_manager.event_processors.base import BaseEventProcessor
 from state_manager.models.state_managers.vkwave import VkWaveStateManager
 from state_manager.storage_settings import StorageSettings
@@ -51,19 +52,18 @@ class VkWaveEventProcessor(BaseEventProcessor):
     async def _message_handler(self, event: BotEvent) -> Any:
         simple_event = SimpleBotEvent(event)
 
-        container = AppContainer.get_current()
-        dependency_container = ContainerWrapper(container)
-        dependency_container.add_dependency(BaseEvent, simple_event)
+        container = Container.get_current()
+        container.add_context(BaseEvent, simple_event)
 
-        implementation_ = container.get(BaseStorage)
-        if implementation_ is not None:
-            dependency_container.add_dependency(
-                BaseStateManager, VkWaveStateManager(storage=implementation_, context=simple_event)
-            )
+        try:
+            implementation_ = container.get(BaseStorage)
+            container.add_context(BaseStateManager, VkWaveStateManager(storage=implementation_, context=simple_event))
+        except DependencyNotFound:
+            pass
 
         state_name = await self._get_state_name(simple_event)
         handler_result = await get_state_handler_and_run(
-            self._state_storage, dependency_container, state_name, "message"
+            self._state_storage, container, state_name, "message"
         )
         if handler_result is not None and isinstance(handler_result, str):
             await simple_event.answer(handler_result)

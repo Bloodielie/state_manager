@@ -2,18 +2,14 @@ from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Callable, Optional, Set, Union, List, Any
 
-from state_manager.dependency.container import AppContainer
+from pyject import Container
+
 from state_manager.models.events import EventsModel
 from state_manager.storages.app import RouterStorage
 from state_manager.models.state import StateModel
 from state_manager.storages.base import BaseStorage
 from state_manager.storages.state_storage import StateStorage
 from state_manager.types.generals import Filters, StateNames
-
-try:
-    from aiogram.types.base import TelegramObject as context
-except ImportError:
-    from vkwave.bots import BaseEvent as context
 
 logger = getLogger(__name__)
 
@@ -56,7 +52,7 @@ class BaseStateRouter(ABC):
 class BaseMainStateRouter(BaseStateRouter):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.container = AppContainer([context])
+        self.container = Container()
 
     @abstractmethod
     def install(
@@ -80,7 +76,7 @@ class BaseRouter(ABC):
 class BaseMainRouter(BaseRouter):
     def __init__(self, token: str):
         self.token = token
-        self.container = AppContainer([context])
+        self.container = Container()
         self._events = EventsModel()
         super().__init__()
 

@@ -43,8 +43,8 @@ class VkWaveMainStateRouter(VkWaveStateRouter, BaseMainStateRouter):
         self._default_state_name = default_state_name or "home"
         self._storage = storage or redis.RedisStorage(StorageSettings())
 
-        self.container.bind_constant(BaseStorage, self._storage)
-        self.container.bind_constant(SimpleLongPollBot, self.bot)
+        self.container.add_constant(BaseStorage, self._storage)
+        self.container.add_constant(SimpleLongPollBot, self.bot)
 
         VkWaveEventProcessor.install(self.bot, self._state_storage, storage, default_state_name)
 
@@ -69,9 +69,9 @@ class VkWaveMainRouter(BaseMainRouter, VkWaveRouter):
     ) -> None:
         logger.info(f"install VkWaveMainRouter")
         storage = storage or redis.RedisStorage(StorageSettings())
-        self.container.bind_constant(BaseStorage, storage)
+        self.container.add_constant(BaseStorage, storage)
         for class_, instance in self.inject_values.items():
-            self.container.bind_constant(class_, instance)
+            self.container.add_constant(class_, instance)
 
         VkWaveEventProcessor.install(self.bot, self._state_storage, storage, default_state_name)
 
