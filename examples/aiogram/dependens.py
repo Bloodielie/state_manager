@@ -2,8 +2,9 @@ import logging
 
 from aiogram import Bot, Dispatcher, executor, types
 
-from state_manager import BaseStorage, Depends, MemoryStorage
-from state_manager.routes.aiogram import AiogramMainStateRouter, AiogramStateManager
+from state_manager import BaseStorage, MemoryStorage
+from state_manager.models.state_managers.aiogram import AiogramStateManager
+from state_manager.routes.aiogram.state import AiogramMainStateRouter
 
 logging.basicConfig(level=logging.INFO)
 
@@ -18,8 +19,7 @@ async def test(state_manager: AiogramStateManager):
 
 
 @main_state.message_handler()
-async def home(msg: types.Message, state_manager: AiogramStateManager, depends_result=Depends(test)):
-    assert depends_result == (await state_manager.data) # True
+async def home(msg: types.Message, state_manager: AiogramStateManager):
     await msg.answer("go to home2")
     await state_manager.set_next_state("home2")
 

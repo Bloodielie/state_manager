@@ -53,7 +53,8 @@ bot.run_forever(ignore_errors=True)
 ```python
 import logging
 from aiogram import Bot, Dispatcher, executor, types
-from state_manager.routes.aiogram import AiogramMainStateRouter, AiogramStateManager
+from state_manager.models.state_managers.aiogram import AiogramStateManager
+from state_manager.routes.aiogram.state import AiogramMainStateRouter
 
 logging.basicConfig(level=logging.INFO)
 

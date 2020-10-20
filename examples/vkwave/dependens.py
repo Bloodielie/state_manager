@@ -2,7 +2,7 @@ from vkwave.bots import SimpleLongPollBot
 
 import logging
 
-from state_manager import Depends, MemoryStorage
+from state_manager import MemoryStorage
 from state_manager.models.state_managers.vkwave import VkWaveStateManager
 from state_manager.routes.vkwave import VkWaveMainStateRouter
 from state_manager.storages.base import BaseStorage
@@ -19,8 +19,7 @@ async def test(state_manager: VkWaveStateManager):
 
 
 @main_state.message_handler()
-async def home(event: bot.SimpleBotEvent, state_manager: VkWaveStateManager, depends_result=Depends(test)):
-    assert depends_result == (await state_manager.data) # True
+async def home(event: bot.SimpleBotEvent, state_manager: VkWaveStateManager):
     await event.answer("go to home2")
     await state_manager.set_next_state("home2")
 

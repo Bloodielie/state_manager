@@ -6,7 +6,8 @@ from vkwave.bots import SimpleLongPollBot, TaskManager
 from state_manager.event_processors.vkwave import VkWaveEventProcessor
 from state_manager.handlers.vkwave import VkWaveStateHandler, VkWaveHandler
 from state_manager.models.state_managers.vkwave import VkWaveStateManager
-from state_manager.routes.base import BaseStateRouter, BaseMainStateRouter, BaseRouter, BaseMainRouter
+from state_manager.routes.base.state import BaseStateRouter, BaseMainStateRouter
+from state_manager.routes.base.complete import BaseRouter, BaseMainRouter
 from state_manager.storages import redis
 from state_manager.storages.base import BaseStorage
 from state_manager.storage_settings import StorageSettings

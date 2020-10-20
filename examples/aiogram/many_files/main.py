@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, executor
 from slave import state_router
 
 from state_manager import MemoryStorage
-from state_manager.routes.aiogram import AiogramMainStateRouter
+from state_manager.routes.aiogram.state import AiogramMainStateRouter
 
 logging.basicConfig(level=logging.INFO)
 
