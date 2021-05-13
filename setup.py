@@ -11,7 +11,7 @@ def get_long_description():
 
 requirements = [
     "aioredis==1.3.1",
-    "pydantic==1.6",
+    "pydantic==1.6.2",
     "python-dotenv==0.14.0",
     "httpx~=0.14.3"
 ]
